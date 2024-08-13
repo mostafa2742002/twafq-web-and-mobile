@@ -1,10 +1,10 @@
-package com.nasr.twafq.colors.service;
+package com.nasr.twafq.colorspairs.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.nasr.twafq.colors.entity.DataPair;
-import com.nasr.twafq.colors.repo.DataPairRepository;
+import com.nasr.twafq.colorspairs.entity.DataPair;
+import com.nasr.twafq.colorspairs.repo.DataPairRepository;
 
 import java.util.List;
 import java.util.Optional;

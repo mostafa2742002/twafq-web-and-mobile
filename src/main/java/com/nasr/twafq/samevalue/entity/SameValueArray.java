@@ -5,13 +5,17 @@ package com.nasr.twafq.samevalue.entity;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import java.util.List;
 
 @Document(collection = "same_value_arrays")
 public class SameValueArray {
 
     @Id
+    @Schema(hidden = true)
     private String id;
+    @Schema(hidden = true)
     private int index;
     private List<Integer> values;
 

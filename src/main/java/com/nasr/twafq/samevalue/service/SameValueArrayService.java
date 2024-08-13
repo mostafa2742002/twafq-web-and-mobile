@@ -1,10 +1,9 @@
 package com.nasr.twafq.samevalue.service;
 
-
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.nasr.twafq.color.entity.Color;
 import com.nasr.twafq.samevalue.entity.SameValueArray;
 import com.nasr.twafq.samevalue.repo.SameValueArrayRepository;
 
@@ -26,6 +25,9 @@ public class SameValueArrayService {
     }
 
     public SameValueArray addSameValueArray(SameValueArray sameValueArray) {
+        // Automatically assign the next available index
+        Integer nextIndex = getNextAvailableIndex();
+        sameValueArray.setIndex(nextIndex);
         return sameValueArrayRepository.save(sameValueArray);
     }
 
@@ -36,5 +38,10 @@ public class SameValueArrayService {
 
     public void deleteSameValueArray(String id) {
         sameValueArrayRepository.deleteById(id);
+    }
+
+    private Integer getNextAvailableIndex() {
+        List<SameValueArray> colors = sameValueArrayRepository.findAll();
+        return colors.size();
     }
 }

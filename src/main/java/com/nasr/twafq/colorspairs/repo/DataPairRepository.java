@@ -1,8 +1,8 @@
-package com.nasr.twafq.colors.repo;
+package com.nasr.twafq.colorspairs.repo;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
 
-import com.nasr.twafq.colors.entity.DataPair;
+import com.nasr.twafq.colorspairs.entity.DataPair;
 
 import java.util.Optional;
 

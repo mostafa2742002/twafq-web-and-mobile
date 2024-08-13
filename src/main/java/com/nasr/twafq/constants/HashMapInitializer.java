@@ -4,8 +4,8 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.nasr.twafq.colors.entity.DataPair;
-import com.nasr.twafq.colors.service.DataPairService;
+import com.nasr.twafq.colorspairs.entity.DataPair;
+import com.nasr.twafq.colorspairs.service.DataPairService;
 
 import jakarta.annotation.PostConstruct;
 import java.util.HashMap;

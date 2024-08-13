@@ -1,12 +1,15 @@
-package com.nasr.twafq.colors.entity;
+package com.nasr.twafq.colorspairs.entity;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 
 @Document(collection = "data_pairs")
 public class DataPair {
 
     @Id
+    @Schema(hidden = true)
     private String id;
     private int key1;
     private int key2;

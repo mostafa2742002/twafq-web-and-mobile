@@ -1,11 +1,11 @@
-package com.nasr.twafq.colors.controller;
+package com.nasr.twafq.colorspairs.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.nasr.twafq.colors.entity.DataPair;
-import com.nasr.twafq.colors.service.DataPairService;
+import com.nasr.twafq.colorspairs.entity.DataPair;
+import com.nasr.twafq.colorspairs.service.DataPairService;
 
 import java.util.List;
 import java.util.Optional;
