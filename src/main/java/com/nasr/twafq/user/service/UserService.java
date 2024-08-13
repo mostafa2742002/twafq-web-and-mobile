@@ -66,13 +66,11 @@ public class UserService implements UserDetailsService {
 
         colorAlgorithm.calculateColorPresentage(savedUser.getId(), userDTO.getColorAnswers());
         // if we use render site then use this
-        String body = "Click the link to verify your email:https://courses-website-q0gf.onrender.com/api/verifyemail?token="
-                + verificationToken;
+        // String body = "Click the link to verify your email:https://overseas-vivie-sasa-deploy-1402ab77.koyeb.app/api/verifyemail?token="
+        //         + verificationToken;
 
         // if we use localhost then use this
-        // String body = "Click the link to verify your
-        // email:http://localhost:8080/api/verifyemail?token="
-        // + verificationToken;
+        String body = "Click the link to verify your email:http://localhost:8080/api/verifyemail?token=" + verificationToken;
         emailService.sendEmail(savedUser.getEmail(), subject, body);
 
         return "the user added successfully go to your email to verify your email";

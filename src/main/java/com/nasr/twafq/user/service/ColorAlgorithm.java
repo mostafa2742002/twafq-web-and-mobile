@@ -26,20 +26,13 @@ public class ColorAlgorithm {
     public void calculateColorPresentage(String userId, ArrayList<Integer> userAnswers) {
         List<UserAlgorithm> users = userAlgorithmRepository.findAll();
 
-        if (users == null || users.isEmpty()) {
-            UserAlgorithm userAlgorithm = new UserAlgorithm();
-            userAlgorithm.setUserId(userId);
-            userAlgorithm.setAnswer(userAnswers);
-            userAlgorithmRepository.save(userAlgorithm);
-            return;
-        }
-
+        // Create a new UserAlgorithm object for the current user
         UserAlgorithm userAlgorithm = new UserAlgorithm();
         userAlgorithm.setUserId(userId);
         userAlgorithm.setAnswer(userAnswers);
 
         Integer sum = 0;
-        Double presentage = 0.0;
+        Double percentage = 0.0;
         Integer counter = 0;
 
         for (UserAlgorithm user : users) {
@@ -56,63 +49,51 @@ public class ColorAlgorithm {
             }
 
             if (counter != 0) {
-                presentage = (double) sum / counter;
+                percentage = (double) sum / counter;
             }
 
-            // now we need to get the userslikeme array and if it less that 10 users we will
-            // add this user to the array
-            // if it more than 10 we will check if the presentage is more than the last user
-            // in the array we will add this user to the array
-            // and remove the last user in the array then sort the array by the presentage
-            // value
-            // and we will do that to the user come from the parameter and save it in the
-            // last step
-
+            // Update the usersLikeMe array
             ArrayList<UserPersentage> usersLikeMe = user.getUsersLikeMe();
-            if (usersLikeMe.size() < 10) {
-                usersLikeMe.add(new UserPersentage(userId, presentage));
-            } else {
-                UserPersentage lastUser = usersLikeMe.get(usersLikeMe.size() - 1);
-                if (lastUser.getPresentage() < presentage) {
-                    usersLikeMe.add(new UserPersentage(userId, presentage));
-                    usersLikeMe.remove(lastUser);
-                    usersLikeMe.sort((o1, o2) -> o1.getPresentage().compareTo(o2.getPresentage()));
-                }
-            }
+            addUserToUsersLikeMe(usersLikeMe, new UserPersentage(userId, percentage));
 
             user.setUsersLikeMe(usersLikeMe);
             userAlgorithmRepository.save(user);
 
-            // we will do the same for the userslike me to the userAlgorithm object
-
+            // Update the usersLikeMe array for the current user
             ArrayList<UserPersentage> usersLikeMeForUser = userAlgorithm.getUsersLikeMe();
-            if (usersLikeMeForUser.size() < 10) {
-                usersLikeMeForUser.add(new UserPersentage(userId, presentage));
-            } else {
-                UserPersentage lastUser = usersLikeMeForUser.get(usersLikeMeForUser.size() - 1);
-                if (lastUser.getPresentage() < presentage) {
-                    usersLikeMeForUser.add(new UserPersentage(userId, presentage));
-                    usersLikeMeForUser.remove(lastUser);
-                    usersLikeMeForUser.sort((o1, o2) -> o1.getPresentage().compareTo(o2.getPresentage()));
-                }
-            }
+            addUserToUsersLikeMe(usersLikeMeForUser, new UserPersentage(user.getUserId(), percentage));
 
             userAlgorithm.setUsersLikeMe(usersLikeMeForUser);
         }
 
+        // Save the current user's algorithm data
         userAlgorithmRepository.save(userAlgorithm);
-
     }
 
+    // Helper method to add a user to the usersLikeMe list
+    private void addUserToUsersLikeMe(ArrayList<UserPersentage> usersLikeMe, UserPersentage userPersentage) {
+        if (usersLikeMe.size() < 10) {
+            usersLikeMe.add(userPersentage);
+        } else {
+            UserPersentage lastUser = usersLikeMe.get(usersLikeMe.size() - 1);
+            if (lastUser.getPresentage() < userPersentage.getPresentage()) {
+                usersLikeMe.add(userPersentage);
+                usersLikeMe.remove(lastUser);
+                usersLikeMe.sort((o1, o2) -> o2.getPresentage().compareTo(o1.getPresentage()));
+            }
+        }
+    }
+
+    // Method to calculate the value for a pair of colors
     public Integer pairCalculate(Integer color1, Integer color2) {
 
-        ArrayList<ArrayList<Integer>> sameValueArray = sameValueMapInitializer.getSameValueِArray();
+        ArrayList<ArrayList<Integer>> sameValueArray = sameValueMapInitializer.getSameValueArray();
         Map<Pair<Integer, Integer>, Integer> dataMap = hashMapInitializer.getDataMap();
 
-        // the array that contains the same values of the color1
+        // The array that contains the same values of color1
         ArrayList<Integer> sameValuesForColor1 = sameValueArray.get(color1);
 
-        // the array that contains the same values of the color2
+        // The array that contains the same values of color2
         ArrayList<Integer> sameValuesForColor2 = sameValueArray.get(color2);
 
         for (Integer sameValue1 : sameValuesForColor1) {

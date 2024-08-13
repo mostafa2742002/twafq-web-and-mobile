@@ -11,6 +11,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import com.nasr.twafq.user.dto.UserDTO;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -46,10 +47,14 @@ public class User extends AuditableBase implements UserDetails {
     @NotNull(message = "phone shouldn't be null")
     private String phone;
 
+    @Schema(hidden = true)
     private String token;
     private String image;
+    @Schema(hidden = true)
     private boolean emailVerified;
+    @Schema(hidden = true)
     private String verificationToken;
+    @Schema(hidden = true)
     private String otp;
 
     // colors i love
@@ -91,6 +96,29 @@ public class User extends AuditableBase implements UserDetails {
         this.password = userDTO.getPassword();
         this.phone = userDTO.getPhone();
         // Add all additional attributes
+        this.firstName = userDTO.getFirstName();
+        this.lastName = userDTO.getLastName();
+        this.gender = userDTO.getGender();
+        this.nationality = userDTO.getNationality();
+        this.countryOfResidence = userDTO.getCountryOfResidence();
+        this.city = userDTO.getCity();
+        this.marriageType = userDTO.getMarriageType();
+        this.maritalStatus = userDTO.getMaritalStatus();
+        this.age = userDTO.getAge();
+        this.numberOfChildren = userDTO.getNumberOfChildren();
+        this.weight = userDTO.getWeight();
+        this.height = userDTO.getHeight();
+        this.skinColor = userDTO.getSkinColor();
+        this.bodyType = userDTO.getBodyType();
+        this.job = userDTO.getJob();
+        this.education = userDTO.getEducation();
+        this.financialStatus = userDTO.getFinancialStatus();
+        this.monthlyIncome = userDTO.getMonthlyIncome();
+        this.healthStatus = userDTO.getHealthStatus();
+        this.religion = userDTO.getReligion();
+        this.selfDescription = userDTO.getSelfDescription();    
+        this.partnerPreferences = userDTO.getPartnerPreferences();
+        this.smoking = userDTO.isSmoking();
     }
 
     @Override

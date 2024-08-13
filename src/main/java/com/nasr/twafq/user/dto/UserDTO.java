@@ -2,6 +2,7 @@ package com.nasr.twafq.user.dto;
 
 import java.util.ArrayList;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
@@ -26,11 +27,14 @@ public class UserDTO {
     private String phone;
 
     // users like me
+    @Schema(hidden = true)
     private ArrayList<String> usersLikeMe = new ArrayList<>();
     // colors i love
+    @Schema(hidden = true)
     private ArrayList<Integer> ColorAnswers = new ArrayList<>();
 
     // Verification
+    @Schema(hidden = true)
     private Boolean isVerifiedUser;
 
     // Additional attributes
