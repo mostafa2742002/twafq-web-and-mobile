@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 
 import com.nasr.twafq.blog.entity.PageResponse;
+import com.nasr.twafq.dto.ResponseDto;
 import com.nasr.twafq.email.EmailService;
 import com.nasr.twafq.jwt.JwtResponse;
 import com.nasr.twafq.jwt.JwtService;
@@ -49,7 +50,7 @@ public class UserService implements UserDetailsService {
         return user;
     }
 
-    public String register(@NonNull UserDTO userDTO) throws MessagingException, InterruptedException {
+    public ResponseDto register(@NonNull UserDTO userDTO) throws MessagingException, InterruptedException {
         if (userRepository.findByEmail(userDTO.getEmail()) != null) {
             throw new IllegalArgumentException("User already exists");
         }
@@ -66,14 +67,17 @@ public class UserService implements UserDetailsService {
 
         colorAlgorithm.calculateColorPresentage(savedUser.getId(), userDTO.getColorAnswers());
         // if we use render site then use this
-        // String body = "Click the link to verify your email:https://overseas-vivie-sasa-deploy-1402ab77.koyeb.app/api/verifyemail?token="
-        //         + verificationToken;
+        // String body = "Click the link to verify your
+        // email:https://overseas-vivie-sasa-deploy-1402ab77.koyeb.app/api/verifyemail?token="
+        // + verificationToken;
 
         // if we use localhost then use this
-        String body = "Click the link to verify your email:http://localhost:8080/api/verifyemail?token=" + verificationToken;
+        String body = "Click the link to verify your email:http://localhost:8080/api/verifyemail?token="
+                + verificationToken;
         emailService.sendEmail(savedUser.getEmail(), subject, body);
 
-        return "the user added successfully go to your email to verify your email";
+        String msg = "the user added successfully go to your email to verify your email";
+        return new ResponseDto("200", msg);
     }
 
     public JwtResponse login(@NonNull LoginDTO userDTO) {
@@ -142,21 +146,88 @@ public class UserService implements UserDetailsService {
         }
     }
 
-    public ResponseEntity<String> updateProfile(UserDTO user, String user_id) {
+    public ResponseEntity<String> updateProfile(UserDTO user, String userId) {
 
-        User user1 = userRepository.findById(user_id).orElse(null);
+        // Retrieve the user from the repository
+        User existingUser = userRepository.findById(userId).orElse(null);
 
-        if (user1 == null) {
+        if (existingUser == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
         }
-        if (user.getName() != null)
-            user1.setName(user.getName());
-        if (user.getPhone() != null)
-            user1.setPhone(user.getPhone());
-        if (user.getEmail() != null)
-            user1.setEmail(user.getEmail());
 
-        userRepository.save(user1);
+        if (user.getFirstName() != null && !user.getFirstName().isEmpty())
+            existingUser.setFirstName(user.getFirstName());
+
+        if (user.getLastName() != null && !user.getLastName().isEmpty())
+            existingUser.setLastName(user.getLastName());
+
+        if (user.getPhone() != null && !user.getPhone().isEmpty())
+            existingUser.setPhone(user.getPhone());
+
+        if (user.getEmail() != null && !user.getEmail().isEmpty())
+            existingUser.setEmail(user.getEmail());
+
+        if (user.getPassword() != null && !user.getPassword().isEmpty())
+            existingUser.setPassword(user.getPassword()); // Be cautious with password updates, consider adding
+                                                          // validation
+
+        // Update additional attributes if present
+        if (user.getGender() != null)
+            existingUser.setGender(user.getGender());
+
+        if (user.getNationality() != null)
+            existingUser.setNationality(user.getNationality());
+
+        if (user.getCountry() != null)
+            existingUser.setCountry(user.getCountry());
+
+        if (user.getCity() != null)
+            existingUser.setCity(user.getCity());
+
+        if (user.getMarriageType() != null)
+            existingUser.setMarriageType(user.getMarriageType());
+
+        if (user.getFamilyStatus() != null)
+            existingUser.setFamilyStatus(user.getFamilyStatus());
+
+        if (user.getAge() > 0)
+            existingUser.setAge(user.getAge());
+
+        if (user.getChildren() > 0)
+            existingUser.setChildren(user.getChildren());
+
+        if (user.getWeight() > 0)
+            existingUser.setWeight(user.getWeight());
+
+        if (user.getHeight() > 0)
+            existingUser.setHeight(user.getHeight());
+
+        if (user.getSkinColor() != null)
+            existingUser.setSkinColor(user.getSkinColor());
+
+        if (user.getShape() != null)
+            existingUser.setShape(user.getShape());
+
+        if (user.getWork() != null)
+            existingUser.setWork(user.getWork());
+
+        if (user.getEducationLevel() != null)
+            existingUser.setEducationLevel(user.getEducationLevel());
+
+        if (user.getFinancialStatus() != null)
+            existingUser.setFinancialStatus(user.getFinancialStatus());
+
+        if (user.getReligion() != null)
+            existingUser.setReligion(user.getReligion());
+
+        if (user.getSelfDescription() != null)
+            existingUser.setSelfDescription(user.getSelfDescription());
+
+        if (user.getPartnerDescription() != null)
+            existingUser.setPartnerDescription(user.getPartnerDescription());
+
+        // Save the updated user profile
+        userRepository.save(existingUser);
 
         return ResponseEntity.ok("Profile updated successfully");
     }
@@ -222,28 +293,26 @@ public class UserService implements UserDetailsService {
         userRepository.save(user);
     }
 
+    //
     public PageResponse<User> findAllUsers(int page, int size, String nationality, String countryOfResidence,
-            String maritalStatus) {
-        Page<User> userPage = userRepository.findAll(PageRequest.of(page, size));
+            String maritalStatus, String gender, String city, String religion,
+            String familyStatus, String marriageType, Integer minAge, Integer maxAge) {
 
-        List<User> users = userPage.getContent();
-        List<User> filteredUsers = new ArrayList<>();
+        Page<User> userPage = userRepository.findFilteredUsers(
+                nationality.equals("null") ? "" : nationality,
+                countryOfResidence.equals("null") ? "" : countryOfResidence,
+                maritalStatus.equals("null") ? "" : maritalStatus,
+                gender.equals("null") ? "" : gender,
+                city.equals("null") ? "" : city,
+                religion.equals("null") ? "" : religion,
+                marriageType.equals("null") ? "" : marriageType,
+                minAge != null ? minAge : 0,
+                maxAge != null ? maxAge : 200, // Assuming 200 as an upper bound
+                PageRequest.of(page, size));
 
-        for (User user : users) {
-            if (!nationality.equals("null") && !nationality.equals(user.getNationality()))
-                continue;
-
-            if (!countryOfResidence.equals("null") && !countryOfResidence.equals(user.getCountryOfResidence()))
-                continue;
-
-            if (!maritalStatus.equals("null") && !maritalStatus.equals(user.getMaritalStatus()))
-                continue;
-
-            filteredUsers.add(user);
-        }
-
+        // The rest of the logic stays the same
         PageResponse<User> response = new PageResponse<>();
-        response.setContent(filteredUsers);
+        response.setContent(userPage.getContent());
         response.setNumber(userPage.getNumber());
         response.setSize(userPage.getSize());
         response.setTotalElements(userPage.getTotalElements());

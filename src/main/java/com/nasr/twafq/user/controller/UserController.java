@@ -25,6 +25,7 @@ import com.nasr.twafq.dto.ResponseDto;
 import com.nasr.twafq.user.dto.LoginDTO;
 import com.nasr.twafq.user.dto.PasswordDTO;
 import com.nasr.twafq.user.dto.UserDTO;
+import com.nasr.twafq.user.dto.UserFilterRequest;
 import com.nasr.twafq.user.entity.User;
 import com.nasr.twafq.user.entity.UserPersentage;
 import com.nasr.twafq.user.service.UserService;
@@ -54,13 +55,13 @@ public class UserController {
             @ApiResponse(responseCode = "500", description = "Failed to send verification email", content = @Content(schema = @Schema(implementation = ErrorResponseDto.class)))
     })
     @PostMapping("/signup")
-    public ResponseEntity<?> signup(@RequestBody @Valid @NotNull UserDTO userDTO) {
+    public ResponseEntity<ResponseDto> signup(@RequestBody @Valid @NotNull UserDTO userDTO) {
         try {
             return ResponseEntity.status(HttpStatus.CREATED).body(userService.register(userDTO));
         } catch (MessagingException | InterruptedException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to send verification email");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ResponseDto("500", e.getMessage()));
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(new ResponseDto("400", e.getMessage()));
         }
     }
 
@@ -171,14 +172,23 @@ public class UserController {
             @ApiResponse(responseCode = "200", description = "HTTP Status OK"),
             @ApiResponse(responseCode = "500", description = "HTTP Status Internal Server Error", content = @Content(schema = @Schema(implementation = ErrorResponseDto.class)))
     })
-    @GetMapping("/users")
-    public ResponseEntity<PageResponse<User>> findAllUsers(
-            @RequestParam(defaultValue = "0", required = false) int page,
-            @RequestParam(defaultValue = "10", required = false) int size,
-            @RequestParam(defaultValue = "null", required = false) String nationality,
-            @RequestParam(defaultValue = "null",required = false) String countryOfResidence,
-            @RequestParam(defaultValue = "null" ,required = false) String maritalStatus) {
-        PageResponse<User> users = userService.findAllUsers(page, size,nationality,countryOfResidence,maritalStatus);
+    @PostMapping("/users/filter")
+    public ResponseEntity<PageResponse<User>> findAllUsers(@RequestBody UserFilterRequest filterRequest) {
+        // Pass the filter request fields to the service method
+        PageResponse<User> users = userService.findAllUsers(
+                filterRequest.getPage(),
+                filterRequest.getSize(),
+                filterRequest.getNationality(),
+                filterRequest.getCountryOfResidence(),
+                filterRequest.getMaritalStatus(),
+                filterRequest.getGender(),
+                filterRequest.getCity(),
+                filterRequest.getReligion(),
+                filterRequest.getFamilyStatus(),
+                filterRequest.getMarriageType(),
+                filterRequest.getMinAge(),
+                filterRequest.getMaxAge());
+
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(users);
@@ -197,6 +207,5 @@ public class UserController {
                 .status(HttpStatus.OK)
                 .body(users);
     }
-
 
 }

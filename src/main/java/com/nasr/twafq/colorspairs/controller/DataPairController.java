@@ -33,6 +33,11 @@ public class DataPairController {
         return dataPairService.addDataPair(dataPair);
     }
 
+    @PostMapping("/all")
+    public List<DataPair> addDataPairs(@RequestBody List<DataPair> dataPairs) {
+        return dataPairService.addAllDataPairs(dataPairs);
+    }
+
     @PutMapping("/{id}")
     public DataPair updateDataPair(@PathVariable String id, @RequestBody DataPair dataPair) {
         return dataPairService.updateDataPair(id, dataPair);

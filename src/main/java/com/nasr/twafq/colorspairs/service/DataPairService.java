@@ -35,4 +35,9 @@ public class DataPairService {
     public void deleteDataPair(String id) {
         dataPairRepository.deleteById(id);
     }
+
+    public List<DataPair> addAllDataPairs(List<DataPair> dataPairs) {
+        return dataPairRepository.saveAll(dataPairs);
+    }
+
 }

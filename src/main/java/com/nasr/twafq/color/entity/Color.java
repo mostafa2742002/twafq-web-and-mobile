@@ -11,8 +11,8 @@ public class Color {
     @Id
     @Schema(hidden = true)
     private String id;
+    
     private String hexCode;
-    @Schema(hidden = true)
     private Integer index;
 
     // Getters and setters

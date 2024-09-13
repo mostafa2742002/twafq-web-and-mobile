@@ -1,6 +1,7 @@
 package com.nasr.twafq.user.dto;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
@@ -14,6 +15,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserDTO {
+
     @NotBlank(message = "Email is mandatory")
     @Email(message = "Provide a valid email")
     private String email;
@@ -21,42 +23,51 @@ public class UserDTO {
     @NotBlank(message = "Password is mandatory")
     private String password;
 
-    private String name;
+    private String confirmPassword;
+
+    private String username;
     private String firstName;
     private String lastName;
     private String phone;
 
-    // users like me
+    private int age;
+    private int weight;
+    private int height;
+
+    // Updated attributes as List<String> to handle array-like inputs
+    private List<String> gender = new ArrayList<>();
+    private List<String> skinColor = new ArrayList<>();
+    private List<String> shape = new ArrayList<>();
+    private List<String> health = new ArrayList<>();
+    private List<String> nationality = new ArrayList<>();
+    private List<String> country = new ArrayList<>();
+    private List<String> city = new ArrayList<>();
+    private List<String> residence = new ArrayList<>();
+    private List<String> familyStatus = new ArrayList<>();
+    private List<String> marriageType = new ArrayList<>();
+    private List<String> educationLevel = new ArrayList<>();
+    private List<String> financialStatus = new ArrayList<>();
+    private List<String> religion = new ArrayList<>();
+    private List<String> doctrine = new ArrayList<>();
+    private List<String> religiousCommitment = new ArrayList<>();
+    private List<String> smoking = new ArrayList<>();
+    private List<String> alcoholDrugs = new ArrayList<>();
+
+    private int children;
+
+    private String work;
+    private String selfDescription;
+    private String partnerDescription;
+
+    private boolean isChecked;
+
+    // Hidden fields
     @Schema(hidden = true)
     private ArrayList<String> usersLikeMe = new ArrayList<>();
-    // colors i love
+
     @Schema(hidden = true)
     private ArrayList<Integer> ColorAnswers = new ArrayList<>();
 
-    // Verification
     @Schema(hidden = true)
     private Boolean isVerifiedUser;
-
-    // Additional attributes
-    private String gender;
-    private String nationality;
-    private String countryOfResidence;
-    private String city;
-    private String marriageType;
-    private String maritalStatus;
-    private int age;
-    private int numberOfChildren;
-    private int weight;
-    private int height;
-    private String skinColor;
-    private String bodyType;
-    private String job;
-    private String education;
-    private String financialStatus;
-    private String monthlyIncome;
-    private String healthStatus;
-    private String religion;
-    private String selfDescription;
-    private String partnerPreferences;
-    private boolean smoking;
 }

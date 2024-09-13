@@ -32,6 +32,11 @@ public class ColorController {
         return colorService.addColor(color);
     }
 
+    @PostMapping("/all")
+    public List<Color> setAllColors(@RequestBody List<Color> colors) {
+        return colorService.setAllColors(colors);
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<Color> updateColor(@PathVariable String id, @RequestBody Color updatedColor) {
         try {

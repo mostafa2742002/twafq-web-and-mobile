@@ -32,7 +32,7 @@ public class User extends AuditableBase implements UserDetails {
 
     @NotNull(message = "username shouldn't be null")
     @Pattern(regexp = "^[a-zA-Z0-9 ]{3,30}$", message = "username must be between 3 and 30 characters long and can only contain letters and numbers")
-    private String name;
+    private String username;
 
     private String firstName;
     private String lastName;
@@ -42,10 +42,7 @@ public class User extends AuditableBase implements UserDetails {
     private String email;
 
     private String password;
-
-    @Pattern(regexp = "^[0-9]{11}$", message = "invalid mobile number entered ")
-    @NotNull(message = "phone shouldn't be null")
-    private String phone;
+    private String confirmPassword;
 
     @Schema(hidden = true)
     private String token;
@@ -62,63 +59,77 @@ public class User extends AuditableBase implements UserDetails {
 
     // Verification
     private Boolean isVerifiedUser;
-
-
     private ArrayList<String> usersContactWith;
 
-    // Additional attributes
-    private String gender; // Male or Female
-    private String nationality; // Country of birth
-    private String countryOfResidence; // Country of residence
-    private String city; // City of residence
-    private String marriageType; // Marriage type for male -> )الزوجة األولى – الثانية – الثالثة – الرابعة( for
-                                 // women -> )ال امانع في التعدد – يجب ان أكون الزوجة الوحيدة(
-    private String maritalStatus; // for male -> )أعزب – مطلق – أرم – أرمل( for
-    private int age; // Age
-    private int numberOfChildren;
+    @Pattern(regexp = "^[0-9]{11}$", message = "invalid mobile number entered")
+    @NotNull(message = "phone shouldn't be null")
+    private String phone;
+
+    private int age;
     private int weight;
     private int height;
-    private String skinColor;
-    private String bodyType; // • بنية الجسم )نحيف – متوسط – سمين – رياضي(
-    private String job;
-    private String education;
-    private String financialStatus; // • الوضع المادي )جيد – متوسط – ضعيف(
-    private String monthlyIncome;
-    private String healthStatus;
-    private String religion; // • الديانة )مسلم – مسيحي – يهودي – غير ذلك(
+
+    // Updated attributes as List<String> to handle array-like inputs
+    private List<String> gender = new ArrayList<>();
+    private List<String> skinColor = new ArrayList<>();
+    private List<String> shape = new ArrayList<>();
+    private List<String> health = new ArrayList<>();
+    private List<String> nationality = new ArrayList<>();
+    private List<String> country = new ArrayList<>();
+    private List<String> city = new ArrayList<>();
+    private List<String> residence = new ArrayList<>();
+    private List<String> familyStatus = new ArrayList<>();
+    private List<String> marriageType = new ArrayList<>();
+    private List<String> educationLevel = new ArrayList<>();
+    private List<String> financialStatus = new ArrayList<>();
+    private List<String> religion = new ArrayList<>();
+    private List<String> doctrine = new ArrayList<>();
+    private List<String> religiousCommitment = new ArrayList<>();
+    private List<String> smoking = new ArrayList<>();
+    private List<String> alcoholDrugs = new ArrayList<>();
+
+    private int children;
+
+    private String work;
     private String selfDescription;
-    private String partnerPreferences;
-    private boolean smoking;
+    private String partnerDescription;
+
+    private boolean isChecked;
 
     public User(UserDTO userDTO) {
         this.email = userDTO.getEmail();
-        this.name = userDTO.getName();
+        this.username = userDTO.getUsername();
         this.password = userDTO.getPassword();
         this.phone = userDTO.getPhone();
+
         // Add all additional attributes
         this.firstName = userDTO.getFirstName();
         this.lastName = userDTO.getLastName();
-        this.gender = userDTO.getGender();
-        this.nationality = userDTO.getNationality();
-        this.countryOfResidence = userDTO.getCountryOfResidence();
-        this.city = userDTO.getCity();
-        this.marriageType = userDTO.getMarriageType();
-        this.maritalStatus = userDTO.getMaritalStatus();
         this.age = userDTO.getAge();
-        this.numberOfChildren = userDTO.getNumberOfChildren();
         this.weight = userDTO.getWeight();
         this.height = userDTO.getHeight();
+        this.gender = userDTO.getGender();
         this.skinColor = userDTO.getSkinColor();
-        this.bodyType = userDTO.getBodyType();
-        this.job = userDTO.getJob();
-        this.education = userDTO.getEducation();
+        this.shape = userDTO.getShape();
+        this.health = userDTO.getHealth();
+        this.nationality = userDTO.getNationality();
+        this.country = userDTO.getCountry();
+        this.city = userDTO.getCity();
+        this.residence = userDTO.getResidence();
+        this.familyStatus = userDTO.getFamilyStatus();
+        this.marriageType = userDTO.getMarriageType();
+        this.children = userDTO.getChildren();
+        this.educationLevel = userDTO.getEducationLevel();
+        this.work = userDTO.getWork();
         this.financialStatus = userDTO.getFinancialStatus();
-        this.monthlyIncome = userDTO.getMonthlyIncome();
-        this.healthStatus = userDTO.getHealthStatus();
         this.religion = userDTO.getReligion();
-        this.selfDescription = userDTO.getSelfDescription();    
-        this.partnerPreferences = userDTO.getPartnerPreferences();
-        this.smoking = userDTO.isSmoking();
+        this.doctrine = userDTO.getDoctrine();
+        this.religiousCommitment = userDTO.getReligiousCommitment();
+        this.smoking = userDTO.getSmoking();
+        this.alcoholDrugs = userDTO.getAlcoholDrugs();
+        this.selfDescription = userDTO.getSelfDescription();
+        this.partnerDescription = userDTO.getPartnerDescription();
+        this.isChecked = userDTO.isChecked();
     }
 
     @Override

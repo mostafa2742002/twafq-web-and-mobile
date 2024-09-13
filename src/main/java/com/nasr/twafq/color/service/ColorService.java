@@ -14,6 +14,10 @@ public class ColorService {
 
     private final ColorRepository colorRepository;
 
+    public List<Color> setAllColors(List<Color> colors) {
+        return colorRepository.saveAll(colors);
+    }
+
     public List<Color> getAllColors() {
         return colorRepository.findAll();
     }
@@ -23,9 +27,6 @@ public class ColorService {
     }
 
     public Color addColor(Color color) {
-        // Automatically assign the next available index
-        Integer nextIndex = getNextAvailableIndex();
-        color.setIndex(nextIndex);
         return colorRepository.save(color);
     }
 
