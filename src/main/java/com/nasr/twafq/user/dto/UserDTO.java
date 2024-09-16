@@ -59,13 +59,13 @@ public class UserDTO {
     private String selfDescription;
     private String partnerDescription;
 
-    private boolean isChecked;
+    // private boolean isChecked;
 
     // Hidden fields
     @Schema(hidden = true)
     private ArrayList<String> usersLikeMe = new ArrayList<>();
 
-    @Schema(hidden = true)
+    // @Schema(hidden = true)
     private ArrayList<Integer> ColorAnswers = new ArrayList<>();
 
     @Schema(hidden = true)

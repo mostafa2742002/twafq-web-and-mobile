@@ -129,7 +129,8 @@ public class User extends AuditableBase implements UserDetails {
         this.alcoholDrugs = userDTO.getAlcoholDrugs();
         this.selfDescription = userDTO.getSelfDescription();
         this.partnerDescription = userDTO.getPartnerDescription();
-        this.isChecked = userDTO.isChecked();
+        // this.isChecked = userDTO.isChecked();
+        this.ColorAnswers = userDTO.getColorAnswers();
     }
 
     @Override

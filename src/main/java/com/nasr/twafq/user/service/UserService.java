@@ -51,6 +51,7 @@ public class UserService implements UserDetailsService {
     }
 
     public ResponseDto register(@NonNull UserDTO userDTO) throws MessagingException, InterruptedException {
+        System.out.println(userDTO.getColorAnswers());
         if (userRepository.findByEmail(userDTO.getEmail()) != null) {
             throw new IllegalArgumentException("User already exists");
         }

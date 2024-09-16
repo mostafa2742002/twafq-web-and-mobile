@@ -56,8 +56,8 @@ public class BlogController {
             @ApiResponse(responseCode = "500", description = "HTTP Status Internal Server Error", content = @Content(schema = @Schema(implementation = ErrorResponseDto.class)))
     })
     @GetMapping("/blog")
-    public ResponseEntity<BlogDTO> getCourse(@RequestParam @NotNull String blogId) {
-        BlogDTO blogDTO = blogService.getCourse(blogId);
+    public ResponseEntity<BlogDTO> getBlog(@RequestParam @NotNull String blogId) {
+        BlogDTO blogDTO = blogService.getBlog(blogId);
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(blogDTO);
@@ -70,8 +70,8 @@ public class BlogController {
             @ApiResponse(responseCode = "500", description = "HTTP Status Internal Server Error", content = @Content(schema = @Schema(implementation = ErrorResponseDto.class)))
     })
     @PutMapping("/blog")
-    public ResponseEntity<ResponseDto> updateCourseDetails(@Valid @RequestBody BlogDTO blogDTO) {
-        boolean isUpdated = blogService.updateCourse(blogDTO);
+    public ResponseEntity<ResponseDto> updateBlog(@Valid @RequestBody BlogDTO blogDTO) {
+        boolean isUpdated = blogService.updateBlog(blogDTO);
         if (isUpdated) {
             return ResponseEntity
                     .status(HttpStatus.OK)
@@ -91,8 +91,8 @@ public class BlogController {
             @ApiResponse(responseCode = "500", description = "HTTP Status Internal Server Error", content = @Content(schema = @Schema(implementation = ErrorResponseDto.class)))
     })
     @DeleteMapping("/blog")
-    public ResponseEntity<ResponseDto> deleteCourse(@RequestParam @NotNull String blogId) {
-        boolean isDeleted = blogService.deleteCourse(blogId);
+    public ResponseEntity<ResponseDto> deleteBlog(@RequestParam @NotNull String blogId) {
+        boolean isDeleted = blogService.deleteBlog(blogId);
         if (isDeleted) {
             return ResponseEntity
                     .status(HttpStatus.OK)
@@ -111,10 +111,10 @@ public class BlogController {
             @ApiResponse(responseCode = "500", description = "HTTP Status Internal Server Error", content = @Content(schema = @Schema(implementation = ErrorResponseDto.class)))
     })
     @GetMapping("/blogs")
-    public ResponseEntity<PageResponse<Blog>> findAllCourses(
+    public ResponseEntity<PageResponse<Blog>> findAllBlogs(
             @RequestParam(defaultValue = "0", required = false) int page,
             @RequestParam(defaultValue = "10", required = false) int size) {
-        PageResponse<Blog> courses = blogService.findAllCourses(page, size);
+        PageResponse<Blog> courses = blogService.findAllBlogs(page, size);
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(courses);

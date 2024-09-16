@@ -21,10 +21,10 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class BlogService {
 
-    private BlogRepository blogRepository;
+    private final BlogRepository blogRepository;
 
     public void createBlog(@Valid BlogDTO blogDTO) {
-        blogDTO.setId(null);
+        blogDTO.setId(null); // Ensure ID is null for creation
         Blog blog = BlogMapper.toBlog(blogDTO);
 
         Optional<Blog> blogOptional = blogRepository.findByTitle(blog.getTitle());
@@ -35,38 +35,31 @@ public class BlogService {
         blogRepository.save(blog);
     }
 
-    public BlogDTO getCourse(@NotNull String courseId) {
-        Blog blog = blogRepository.findById(courseId).orElseThrow(
-                () -> new ResourceNotFoundException("Blog", "Blog Id", courseId));
-        BlogDTO blogDTO = BlogMapper.toBlogDto(blog);
-        return blogDTO;
+    public BlogDTO getBlog(@NotNull String blogId) {
+        Blog blog = blogRepository.findById(blogId).orElseThrow(
+                () -> new ResourceNotFoundException("Blog", "Blog Id", blogId));
+        return BlogMapper.toBlogDto(blog);
     }
 
-    public boolean updateCourse(@Valid BlogDTO blogDTO) {
-        boolean isUpdated = false;
+    public boolean updateBlog(@Valid BlogDTO blogDTO) {
         Blog blog = BlogMapper.toBlog(blogDTO);
         Optional<Blog> blogOptional = blogRepository.findById(blog.getId());
         if (blogOptional.isEmpty())
             throw new ResourceNotFoundException("Blog", "Blog Id", blogDTO.getId());
 
         blogRepository.save(blog);
-        isUpdated = true;
-
-        return isUpdated;
+        return true;
     }
 
-    public boolean deleteCourse(@NotNull String blogId) {
-        boolean isDeleted = false;
+    public boolean deleteBlog(@NotNull String blogId) {
         Blog blog = blogRepository.findById(blogId).orElseThrow(
                 () -> new ResourceNotFoundException("Blog", "Blog Id", blogId));
 
         blogRepository.delete(blog);
-
-        isDeleted = true;
-        return isDeleted;
+        return true;
     }
 
-    public PageResponse<Blog> findAllCourses(int page, int size) {
+    public PageResponse<Blog> findAllBlogs(int page, int size) {
         Page<Blog> blogPage = blogRepository.findAll(PageRequest.of(page, size));
 
         PageResponse<Blog> response = new PageResponse<>();
@@ -80,5 +73,4 @@ public class BlogService {
 
         return response;
     }
-
 }

@@ -91,10 +91,21 @@ public class ColorAlgorithm {
         Map<Pair<Integer, Integer>, Integer> dataMap = hashMapInitializer.getDataMap();
 
         // The array that contains the same values of color1
-        ArrayList<Integer> sameValuesForColor1 = sameValueArray.get(color1);
+        ArrayList<Integer> sameValuesForColor1 = new ArrayList<>();
+        for(int i = 0; i < sameValueArray.size(); i++) {
+            if(sameValueArray.get(i).contains(color1)) {
+                sameValuesForColor1.add(i);
+            }
+        }
 
         // The array that contains the same values of color2
-        ArrayList<Integer> sameValuesForColor2 = sameValueArray.get(color2);
+        ArrayList<Integer> sameValuesForColor2 = new ArrayList<>();
+
+        for(int i = 0; i < sameValueArray.size(); i++) {
+            if(sameValueArray.get(i).contains(color2)) {
+                sameValuesForColor2.add(i);
+            }
+        }
 
         for (Integer sameValue1 : sameValuesForColor1) {
             for (Integer sameValue2 : sameValuesForColor2) {

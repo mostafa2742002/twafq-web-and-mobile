@@ -73,7 +73,8 @@ public class SecurityConfig {
                                 "/pay.html",
                                 "/api/verifyemail",
                                 "/api/forgotpassword",
-                                "/api/resetpassword")
+                                "/api/resetpassword",
+                                "/api/colors")
                         .permitAll()
                         .anyRequest().authenticated())
                 .csrf(AbstractHttpConfigurer::disable)
