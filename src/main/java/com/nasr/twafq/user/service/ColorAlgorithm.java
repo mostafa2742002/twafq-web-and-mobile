@@ -72,16 +72,9 @@ public class ColorAlgorithm {
 
     // Helper method to add a user to the usersLikeMe list
     private void addUserToUsersLikeMe(ArrayList<UserPersentage> usersLikeMe, UserPersentage userPersentage) {
-        if (usersLikeMe.size() < 10) {
-            usersLikeMe.add(userPersentage);
-        } else {
-            UserPersentage lastUser = usersLikeMe.get(usersLikeMe.size() - 1);
-            if (lastUser.getPresentage() < userPersentage.getPresentage()) {
-                usersLikeMe.add(userPersentage);
-                usersLikeMe.remove(lastUser);
-                usersLikeMe.sort((o1, o2) -> o2.getPresentage().compareTo(o1.getPresentage()));
-            }
-        }
+        // we want to add the new one then sort so the highest presentage will be first
+        usersLikeMe.add(userPersentage);
+        usersLikeMe.sort((o1, o2) -> o2.getPresentage().compareTo(o1.getPresentage()));
     }
 
     // Method to calculate the value for a pair of colors
@@ -92,8 +85,8 @@ public class ColorAlgorithm {
 
         // The array that contains the same values of color1
         ArrayList<Integer> sameValuesForColor1 = new ArrayList<>();
-        for(int i = 0; i < sameValueArray.size(); i++) {
-            if(sameValueArray.get(i).contains(color1)) {
+        for (int i = 0; i < sameValueArray.size(); i++) {
+            if (sameValueArray.get(i).contains(color1)) {
                 sameValuesForColor1.add(i);
             }
         }
@@ -101,8 +94,8 @@ public class ColorAlgorithm {
         // The array that contains the same values of color2
         ArrayList<Integer> sameValuesForColor2 = new ArrayList<>();
 
-        for(int i = 0; i < sameValueArray.size(); i++) {
-            if(sameValueArray.get(i).contains(color2)) {
+        for (int i = 0; i < sameValueArray.size(); i++) {
+            if (sameValueArray.get(i).contains(color2)) {
                 sameValuesForColor2.add(i);
             }
         }

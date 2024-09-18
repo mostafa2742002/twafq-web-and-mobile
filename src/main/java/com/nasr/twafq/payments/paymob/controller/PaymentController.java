@@ -19,12 +19,6 @@ public class PaymentController {
 
     private final PaymentService paymentService;
 
-    @GetMapping("/create-payment-intent")
-    public ResponseEntity<ResponseDto> createPaymentIntent(@RequestParam int amount,
-            @RequestParam("course_id") String courseId, @RequestParam("user_id") String userId,
-            @RequestParam("expiry_date") int expiryDate) {
-        return paymentService.createPaymentIntent(amount, courseId, userId, expiryDate);
-    }
 
     @GetMapping("/create-verify-intent")
     public ResponseEntity<ResponseDto> createVerifyIntent(@RequestParam int amount,
@@ -38,15 +32,13 @@ public class PaymentController {
         return paymentService.createAddUserIntent(amount, userId, targetId);
     }
 
-    @PostMapping("/callback")
-    public void callback(@RequestBody TransactionCallback transactionCallback) {
-
-        paymentService.handleCallback(transactionCallback);
-    }
-
     @PostMapping("/callback/verify")
     public void verifyCallback(@RequestBody TransactionCallback transactionCallback) {
         paymentService.handleVerifyCallback(transactionCallback);
     }
 
+    @PostMapping("/callback/add-user")
+    public void addUserCallback(@RequestBody TransactionCallback transactionCallback) {
+        paymentService.handleAddUserCallback(transactionCallback);
+    }
 }

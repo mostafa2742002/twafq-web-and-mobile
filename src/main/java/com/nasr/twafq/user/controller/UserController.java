@@ -2,6 +2,7 @@ package com.nasr.twafq.user.controller;
 
 import java.util.ArrayList;
 
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -46,166 +47,168 @@ import lombok.AllArgsConstructor;
 @RequestMapping(path = "/api", produces = { MediaType.APPLICATION_JSON_VALUE })
 public class UserController {
 
-    private UserService userService;
+        private UserService userService;
 
-    @Operation(summary = "Sign up a new user", description = "Sign up a new user")
-    @ApiResponses({
-            @ApiResponse(responseCode = "201", description = "User created successfully"),
-            @ApiResponse(responseCode = "400", description = "Bad request"),
-            @ApiResponse(responseCode = "500", description = "Failed to send verification email", content = @Content(schema = @Schema(implementation = ErrorResponseDto.class)))
-    })
-    @PostMapping("/signup")
-    public ResponseEntity<ResponseDto> signup(@RequestBody @Valid @NotNull UserDTO userDTO) {
-        try {
-            return ResponseEntity.status(HttpStatus.CREATED).body(userService.register(userDTO));
-        } catch (MessagingException | InterruptedException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ResponseDto("500", e.getMessage()));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(new ResponseDto("400", e.getMessage()));
+        @Operation(summary = "Sign up a new user", description = "Sign up a new user")
+        @ApiResponses({
+                        @ApiResponse(responseCode = "201", description = "User created successfully"),
+                        @ApiResponse(responseCode = "400", description = "Bad request"),
+                        @ApiResponse(responseCode = "500", description = "Failed to send verification email", content = @Content(schema = @Schema(implementation = ErrorResponseDto.class)))
+        })
+        @PostMapping("/signup")
+        public ResponseEntity<ResponseDto> signup(@RequestBody @Valid @NotNull UserDTO userDTO) {
+                try {
+                        return ResponseEntity.status(HttpStatus.CREATED).body(userService.register(userDTO));
+                } catch (MessagingException | InterruptedException e) {
+                        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                        .body(new ResponseDto("500", e.getMessage()));
+                } catch (IllegalArgumentException e) {
+                        return ResponseEntity.badRequest().body(new ResponseDto("400", e.getMessage()));
+                }
         }
-    }
 
-    @Operation(summary = "Sign in a user", description = "Sign in a user")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "User signed in successfully"),
-            @ApiResponse(responseCode = "401", description = "Invalid credentials", content = @Content(schema = @Schema(implementation = ErrorResponseDto.class)))
-    })
+        @Operation(summary = "Sign in a user", description = "Sign in a user")
+        @ApiResponses({
+                        @ApiResponse(responseCode = "200", description = "User signed in successfully"),
+                        @ApiResponse(responseCode = "401", description = "Invalid credentials", content = @Content(schema = @Schema(implementation = ErrorResponseDto.class)))
+        })
 
-    @PostMapping("/signin")
-    public ResponseEntity<?> login(@RequestBody @Valid @NotNull LoginDTO userDTO) {
-        try {
-            return ResponseEntity.ok(userService.login(userDTO));
-        } catch (AuthenticationException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+        @PostMapping("/signin")
+        public ResponseEntity<?> login(@RequestBody @Valid @NotNull LoginDTO userDTO) {
+                try {
+                        return ResponseEntity.ok(userService.login(userDTO));
+                } catch (AuthenticationException e) {
+                        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+                }
         }
-    }
 
-    @Operation(summary = "Get user profile", description = "Get user profile by user id")
-    @ApiResponses({ @ApiResponse(responseCode = "200", description = "Profile retrieved successfully"),
-            @ApiResponse(responseCode = "400", description = "Bad request", content = @Content(schema = @Schema(implementation = ErrorResponseDto.class)
+        @Operation(summary = "Get user profile", description = "Get user profile by user id")
+        @ApiResponses({ @ApiResponse(responseCode = "200", description = "Profile retrieved successfully"),
+                        @ApiResponse(responseCode = "400", description = "Bad request", content = @Content(schema = @Schema(implementation = ErrorResponseDto.class)
 
-            )) })
-    @GetMapping("/profile")
-    public ResponseEntity<User> getProfile() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Object principal = authentication.getPrincipal();
-        String email = ((UserDetails) principal).getUsername();
-        return ResponseEntity.ok(userService.getProfile(email));
-    }
+                        )) })
+        @GetMapping("/profile")
+        public ResponseEntity<User> getProfile() {
+                Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+                Object principal = authentication.getPrincipal();
+                String email = ((UserDetails) principal).getUsername();
+                return ResponseEntity.ok(userService.getProfile(email));
+        }
 
-    @Operation(summary = "Validate The user email", description = "Validate The user email")
-    @ApiResponses({ @ApiResponse(responseCode = "200", description = "Email verified successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid token", content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
+        @Operation(summary = "Validate The user email", description = "Validate The user email")
+        @ApiResponses({ @ApiResponse(responseCode = "200", description = "Email verified successfully"),
+                        @ApiResponse(responseCode = "400", description = "Invalid token", content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
 
-            ) })
+                        ) })
 
-    @GetMapping("/verifyemail")
-    public ResponseEntity<String> verifyEmail(@RequestParam @NotNull String token) {
-        return userService.verifyEmail(token);
-    }
+        @GetMapping("/verifyemail")
+        public ResponseEntity<String> verifyEmail(@RequestParam @NotNull String token) {
+                return userService.verifyEmail(token);
+        }
 
-    @Operation(summary = "Get a new access token", description = "send a refresh token to get a new access token")
-    @ApiResponses({ @ApiResponse(responseCode = "200", description = "Token refreshed successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid token", content = @Content(schema = @Schema(implementation = ErrorResponseDto.class)
+        @Operation(summary = "Get a new access token", description = "send a refresh token to get a new access token")
+        @ApiResponses({ @ApiResponse(responseCode = "200", description = "Token refreshed successfully"),
+                        @ApiResponse(responseCode = "400", description = "Invalid token", content = @Content(schema = @Schema(implementation = ErrorResponseDto.class)
 
-            )) })
+                        )) })
 
-    @GetMapping("/refresh-token")
-    public String postMethodName(@RequestParam @NotNull String refreshToken) {
-        return userService.refreshToken(refreshToken);
-    }
+        @GetMapping("/refresh-token")
+        public String postMethodName(@RequestParam @NotNull String refreshToken) {
+                return userService.refreshToken(refreshToken);
+        }
 
-    @Operation(summary = "update user profile", description = "update user profile by user id")
-    @ApiResponses({ @ApiResponse(responseCode = "200", description = "Profile updated successfully"),
-            @ApiResponse(responseCode = "400", description = "Bad request", content = @Content(schema = @Schema(implementation = ErrorResponseDto.class)
+        @Operation(summary = "update user profile", description = "update user profile by user id")
+        @ApiResponses({ @ApiResponse(responseCode = "200", description = "Profile updated successfully"),
+                        @ApiResponse(responseCode = "400", description = "Bad request", content = @Content(schema = @Schema(implementation = ErrorResponseDto.class)
 
-            )) })
+                        )) })
 
-    @PutMapping("/profile")
-    public ResponseEntity<String> updateProfile(@RequestBody @NotNull UserDTO user, @RequestParam String user_id) {
-        return userService.updateProfile(user, user_id);
-    }
+        @PutMapping("/profile")
+        public ResponseEntity<String> updateProfile(@RequestBody @NotNull UserDTO user, @RequestParam String user_id) {
+                return userService.updateProfile(user, user_id);
+        }
 
-    @Operation(summary = "Update user password", description = "Update user password")
-    @ApiResponses({ @ApiResponse(responseCode = "200", description = "Password updated successfully"),
-            @ApiResponse(responseCode = "400", description = "Bad request", content = @Content(schema = @Schema(implementation = ErrorResponseDto.class)
+        @Operation(summary = "Update user password", description = "Update user password")
+        @ApiResponses({ @ApiResponse(responseCode = "200", description = "Password updated successfully"),
+                        @ApiResponse(responseCode = "400", description = "Bad request", content = @Content(schema = @Schema(implementation = ErrorResponseDto.class)
 
-            )) })
+                        )) })
 
-    @PutMapping("/password")
-    public ResponseEntity<String> updatePassword(@RequestBody @NotNull PasswordDTO passwordDTO) {
+        @PutMapping("/password")
+        public ResponseEntity<String> updatePassword(@RequestBody @NotNull PasswordDTO passwordDTO) {
 
-        return userService.updatePassword(passwordDTO.getUserId(), passwordDTO.getOldPassword(),
-                passwordDTO.getNewPassword());
-    }
+                return userService.updatePassword(passwordDTO.getUserId(), passwordDTO.getOldPassword(),
+                                passwordDTO.getNewPassword());
+        }
 
-    @Operation(summary = "Forgot password", description = "Forgot password")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "otp sent successfully to you email", content = @Content(schema = @Schema(implementation = ResponseDto.class))),
-            @ApiResponse(responseCode = "400", description = "Bad request", content = @Content(schema = @Schema(implementation = ErrorResponseDto.class)
+        @Operation(summary = "Forgot password", description = "Forgot password")
+        @ApiResponses({
+                        @ApiResponse(responseCode = "200", description = "otp sent successfully to you email", content = @Content(schema = @Schema(implementation = ResponseDto.class))),
+                        @ApiResponse(responseCode = "400", description = "Bad request", content = @Content(schema = @Schema(implementation = ErrorResponseDto.class)
 
-            )) })
-    @PostMapping("/forgotpassword")
-    public ResponseEntity<ResponseDto> forgotPassword(@RequestParam @NotNull String email)
-            throws MessagingException, InterruptedException {
-        String response = userService.forgotPassword(email);
-        return ResponseEntity.status(HttpStatus.OK).body(new ResponseDto(ServerConstants.STATUS_200, response));
-    }
+                        )) })
+        @PostMapping("/forgotpassword")
+        public ResponseEntity<ResponseDto> forgotPassword(@RequestParam @NotNull String email)
+                        throws MessagingException, InterruptedException {
+                String response = userService.forgotPassword(email);
+                return ResponseEntity.status(HttpStatus.OK).body(new ResponseDto(ServerConstants.STATUS_200, response));
+        }
 
-    @Operation(summary = "Put the opt", description = "Reset password by by user email and the otp")
-    @ApiResponses({ @ApiResponse(responseCode = "200", description = "Password reset successfully"),
-            @ApiResponse(responseCode = "400", description = "Bad request", content = @Content(schema = @Schema(implementation = ErrorResponseDto.class)
+        @Operation(summary = "Put the opt", description = "Reset password by by user email and the otp")
+        @ApiResponses({ @ApiResponse(responseCode = "200", description = "Password reset successfully"),
+                        @ApiResponse(responseCode = "400", description = "Bad request", content = @Content(schema = @Schema(implementation = ErrorResponseDto.class)
 
-            )) })
-    @PutMapping("/resetpassword")
-    public ResponseEntity<ResponseDto> resetPassword(@RequestParam @NotNull String userEmail,
-            @RequestParam @NotNull String otp,
-            @RequestParam @NotNull String newPassword) {
-        userService.resetPassword(userEmail, otp, newPassword);
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(new ResponseDto(ServerConstants.STATUS_200, ServerConstants.MESSAGE_200));
-    }
+                        )) })
+        @PutMapping("/resetpassword")
+        public ResponseEntity<ResponseDto> resetPassword(@RequestParam @NotNull String userEmail,
+                        @RequestParam @NotNull String otp,
+                        @RequestParam @NotNull String newPassword) {
+                userService.resetPassword(userEmail, otp, newPassword);
+                return ResponseEntity
+                                .status(HttpStatus.OK)
+                                .body(new ResponseDto(ServerConstants.STATUS_200, ServerConstants.MESSAGE_200));
+        }
 
-    @Operation(summary = "Fetch all Users REST API", description = "REST API to fetch all User and Filter them by Page and Size and other parameters")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "HTTP Status OK"),
-            @ApiResponse(responseCode = "500", description = "HTTP Status Internal Server Error", content = @Content(schema = @Schema(implementation = ErrorResponseDto.class)))
-    })
-    @PostMapping("/users/filter")
-    public ResponseEntity<PageResponse<User>> findAllUsers(@RequestBody UserFilterRequest filterRequest) {
-        // Pass the filter request fields to the service method
-        PageResponse<User> users = userService.findAllUsers(
-                filterRequest.getPage(),
-                filterRequest.getSize(),
-                filterRequest.getNationality(),
-                filterRequest.getCountryOfResidence(),
-                filterRequest.getMaritalStatus(),
-                filterRequest.getGender(),
-                filterRequest.getCity(),
-                filterRequest.getReligion(),
-                filterRequest.getFamilyStatus(),
-                filterRequest.getMarriageType(),
-                filterRequest.getMinAge(),
-                filterRequest.getMaxAge());
+        @Operation(summary = "Fetch all Users REST API", description = "REST API to fetch all User and Filter them by Page and Size and other parameters")
+        @ApiResponses({
+                        @ApiResponse(responseCode = "200", description = "HTTP Status OK"),
+                        @ApiResponse(responseCode = "500", description = "HTTP Status Internal Server Error", content = @Content(schema = @Schema(implementation = ErrorResponseDto.class)))
+        })
+        @PostMapping("/users/filter")
+        public ResponseEntity<Page<User>> findAllUsers(@RequestBody UserFilterRequest filterRequest) {
+                Page<User> users = userService.findAllUsers(filterRequest);
+                return ResponseEntity.ok(users);
+        }
 
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(users);
-    }
+        @Operation(summary = "Fetch all Users Like Me REST API", description = "REST API to fetch all Users Like Me")
+        @ApiResponses({
+                        @ApiResponse(responseCode = "200", description = "HTTP Status OK"),
+                        @ApiResponse(responseCode = "500", description = "HTTP Status Internal Server Error", content = @Content(schema = @Schema(implementation = ErrorResponseDto.class)))
+        })
+        @GetMapping("/users/like-me")
+        public ResponseEntity<ArrayList<UserPersentage>> findUsersLikeMe(
+                        @RequestParam String userId) {
+                ArrayList<UserPersentage> users = userService.findUsersLikeMe(userId);
+                return ResponseEntity
+                                .status(HttpStatus.OK)
+                                .body(users);
+        }
 
-    @Operation(summary = "Fetch all Users Like Me REST API", description = "REST API to fetch all Users Like Me")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "HTTP Status OK"),
-            @ApiResponse(responseCode = "500", description = "HTTP Status Internal Server Error", content = @Content(schema = @Schema(implementation = ErrorResponseDto.class)))
-    })
-    @GetMapping("/users/like-me")
-    public ResponseEntity<ArrayList<UserPersentage>> findUsersLikeMe(
-            @RequestParam String userId) {
-        ArrayList<UserPersentage> users = userService.findUsersLikeMe(userId);
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(users);
-    }
+        @GetMapping("/users/sorted/age")
+        public Page<User> getAllUsers(
+                        @RequestParam(defaultValue = "0") int page,
+                        @RequestParam(defaultValue = "10") int size,
+                        @RequestParam(defaultValue = "asc") String sortDirection) {
+                return userService.getUsersSortedByAge(page, size, sortDirection);
+        }
+
+        @GetMapping("/users/sorted/usersLikeMe")
+        public Page<UserPersentage> getUsersLikeMe(
+                        @RequestParam String userId,
+                        @RequestParam(defaultValue = "0") int page,
+                        @RequestParam(defaultValue = "10") int size,
+                        @RequestParam(defaultValue = "desc") String sortDirection) {
+                return userService.getAllUsersLikeMe(userId, page, size, sortDirection);
+        }
 
 }

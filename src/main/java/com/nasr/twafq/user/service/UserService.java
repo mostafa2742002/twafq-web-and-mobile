@@ -1,7 +1,10 @@
 package com.nasr.twafq.user.service;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
@@ -21,6 +24,7 @@ import com.nasr.twafq.jwt.JwtResponse;
 import com.nasr.twafq.jwt.JwtService;
 import com.nasr.twafq.user.dto.LoginDTO;
 import com.nasr.twafq.user.dto.UserDTO;
+import com.nasr.twafq.user.dto.UserFilterRequest;
 import com.nasr.twafq.user.entity.User;
 import com.nasr.twafq.user.entity.UserAlgorithm;
 import com.nasr.twafq.user.entity.UserPersentage;
@@ -294,34 +298,8 @@ public class UserService implements UserDetailsService {
         userRepository.save(user);
     }
 
-    //
-    public PageResponse<User> findAllUsers(int page, int size, String nationality, String countryOfResidence,
-            String maritalStatus, String gender, String city, String religion,
-            String familyStatus, String marriageType, Integer minAge, Integer maxAge) {
-
-        Page<User> userPage = userRepository.findFilteredUsers(
-                nationality.equals("null") ? "" : nationality,
-                countryOfResidence.equals("null") ? "" : countryOfResidence,
-                maritalStatus.equals("null") ? "" : maritalStatus,
-                gender.equals("null") ? "" : gender,
-                city.equals("null") ? "" : city,
-                religion.equals("null") ? "" : religion,
-                marriageType.equals("null") ? "" : marriageType,
-                minAge != null ? minAge : 0,
-                maxAge != null ? maxAge : 200, // Assuming 200 as an upper bound
-                PageRequest.of(page, size));
-
-        // The rest of the logic stays the same
-        PageResponse<User> response = new PageResponse<>();
-        response.setContent(userPage.getContent());
-        response.setNumber(userPage.getNumber());
-        response.setSize(userPage.getSize());
-        response.setTotalElements(userPage.getTotalElements());
-        response.setTotalPages(userPage.getTotalPages());
-        response.setFirst(userPage.isFirst());
-        response.setLast(userPage.isLast());
-
-        return response;
+    public Page<User> findAllUsers(UserFilterRequest filterRequest) {
+        return userRepository.findFilteredUsers(filterRequest);
     }
 
     public ArrayList<UserPersentage> findUsersLikeMe(String userId) {
@@ -331,8 +309,43 @@ public class UserService implements UserDetailsService {
         }
 
         ArrayList<UserPersentage> usersLikeMe = user.getUsersLikeMe();
+        // we need only the top 10 users
+        if (usersLikeMe.size() > 10) {
+            usersLikeMe = new ArrayList<>(usersLikeMe.subList(0, 10));
+        }
         return usersLikeMe;
 
     }
 
+    public Page<User> getUsersSortedByAge(int page, int size, String sortDirection) {
+        Pageable pageable;
+        if (sortDirection.equalsIgnoreCase("desc")) {
+            pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "age"));
+        } else {
+            pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "age"));
+        }
+        return userRepository.findAll(pageable);
+    }
+
+    public Page<UserPersentage> getAllUsersLikeMe(String userId, int page, int size, String sortDirection) {
+        UserAlgorithm userAlgorithm = userAlgorithmRepository.findByUserId(userId);
+
+        if (userAlgorithm == null) {
+            throw new RuntimeException("User algorithm not found");
+        }
+
+        List<UserPersentage> usersLikeMe = userAlgorithm.getUsersLikeMe();
+
+        // Sort the list based on the required direction
+        if (sortDirection.equalsIgnoreCase("asc")) {
+            Collections.reverse(usersLikeMe); // Reverse the list if asc is required
+        }
+
+        // Pagination logic
+        int start = Math.min(page * size, usersLikeMe.size());
+        int end = Math.min((page + 1) * size, usersLikeMe.size());
+
+        List<UserPersentage> paginatedList = usersLikeMe.subList(start, end);
+        return new PageImpl<>(paginatedList);
+    }
 }
