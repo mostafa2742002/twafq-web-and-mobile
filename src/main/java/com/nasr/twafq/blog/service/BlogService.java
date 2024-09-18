@@ -73,4 +73,27 @@ public class BlogService {
 
         return response;
     }
+
+    public void viewBlog(@NotNull String blogId) {
+        Blog blog = blogRepository.findById(blogId).orElseThrow(
+                () -> new ResourceNotFoundException("Blog", "Blog Id", blogId));
+
+        blog.setViews(blog.getViews() + 1);
+        blogRepository.save(blog);
+    }
+
+    public PageResponse<Blog> findMostViewedBlogs(int page, int size) {
+        Page<Blog> blogPage = blogRepository.findAllByOrderByViewsDesc(PageRequest.of(page, size));
+
+        PageResponse<Blog> response = new PageResponse<>();
+        response.setContent(blogPage.getContent());
+        response.setNumber(blogPage.getNumber());
+        response.setSize(blogPage.getSize());
+        response.setTotalElements(blogPage.getTotalElements());
+        response.setTotalPages(blogPage.getTotalPages());
+        response.setFirst(blogPage.isFirst());
+        response.setLast(blogPage.isLast());
+
+        return response;
+    }
 }

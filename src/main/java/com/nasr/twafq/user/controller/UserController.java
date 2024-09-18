@@ -210,5 +210,5 @@ public class UserController {
                         @RequestParam(defaultValue = "desc") String sortDirection) {
                 return userService.getAllUsersLikeMe(userId, page, size, sortDirection);
         }
-
+        
 }

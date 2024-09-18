@@ -28,5 +28,7 @@ public class Blog {
 
     private List<Sentence> sentences;  // List of sentences with title, sentence, and link
 
+    private int views;
+
 }
 

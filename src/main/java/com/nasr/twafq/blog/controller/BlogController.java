@@ -119,4 +119,23 @@ public class BlogController {
                 .status(HttpStatus.OK)
                 .body(courses);
     }
+
+    @PostMapping("/blog/view")
+        public ResponseEntity<ResponseDto> viewBlog(@RequestParam @NotNull String blogId) {
+                blogService.viewBlog(blogId);
+                return ResponseEntity
+                        .status(HttpStatus.OK)
+                        .body(new ResponseDto(ServerConstants.STATUS_200, ServerConstants.MESSAGE_200));
+        }
+
+
+        @GetMapping("/blog/most-viewed")
+        public ResponseEntity<PageResponse<Blog>> findMostViewedBlogs(
+                @RequestParam(defaultValue = "0", required = false) int page,
+                @RequestParam(defaultValue = "10", required = false) int size) {
+            PageResponse<Blog> courses = blogService.findMostViewedBlogs(page, size);
+            return ResponseEntity
+                    .status(HttpStatus.OK)
+                    .body(courses);
+        }
 }
