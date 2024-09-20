@@ -88,11 +88,8 @@ public class UserController {
 
                         )) })
         @GetMapping("/profile")
-        public ResponseEntity<User> getProfile() {
-                Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-                Object principal = authentication.getPrincipal();
-                String email = ((UserDetails) principal).getUsername();
-                return ResponseEntity.ok(userService.getProfile(email));
+        public ResponseEntity<User> getProfile(String userId) {
+                return ResponseEntity.ok(userService.getProfile(userId));
         }
 
         @Operation(summary = "Validate The user email", description = "Validate The user email")
@@ -175,8 +172,10 @@ public class UserController {
                         @ApiResponse(responseCode = "500", description = "HTTP Status Internal Server Error", content = @Content(schema = @Schema(implementation = ErrorResponseDto.class)))
         })
         @PostMapping("/users/filter")
-        public ResponseEntity<Page<User>> findAllUsers(@RequestBody UserFilterRequest filterRequest) {
-                Page<User> users = userService.findAllUsers(filterRequest);
+        public ResponseEntity<Page<User>> findAllUsers(@RequestBody UserFilterRequest filterRequest,
+                        @RequestParam(defaultValue = "null") String age, @RequestParam(defaultValue = "null") String likeme,
+                        @RequestParam(defaultValue = "null")  String userId){
+                Page<User> users = userService.findAllUsers(filterRequest, age, likeme, userId);
                 return ResponseEntity.ok(users);
         }
 
@@ -211,4 +210,11 @@ public class UserController {
                 return userService.getAllUsersLikeMe(userId, page, size, sortDirection);
         }
         
+        @PostMapping("/user/favorite")
+        public ResponseEntity<ResponseDto> favoriteUser(@RequestParam String userId, @RequestParam String favoriteUserId) {
+                userService.favoriteUser(userId, favoriteUserId);
+                return ResponseEntity
+                                .status(HttpStatus.OK)
+                                .body(new ResponseDto(ServerConstants.STATUS_200, ServerConstants.MESSAGE_200));
+        }
 }

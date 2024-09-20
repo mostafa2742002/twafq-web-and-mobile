@@ -34,6 +34,10 @@ public class UserRepositoryCustomImpl implements UserRepositoryCustom {
             criteriaList.add(Criteria.where("countryOfResidence").in(filterRequest.getCountryOfResidence()));
         }
 
+        if (filterRequest.getCountry() != null && !filterRequest.getCountry().isEmpty()) {
+            criteriaList.add(Criteria.where("country").in(filterRequest.getCountry()));
+        }
+
         if (filterRequest.getMaritalStatus() != null && !filterRequest.getMaritalStatus().isEmpty()) {
             criteriaList.add(Criteria.where("maritalStatus").in(filterRequest.getMaritalStatus()));
         }
@@ -48,6 +52,10 @@ public class UserRepositoryCustomImpl implements UserRepositoryCustom {
 
         if (filterRequest.getReligion() != null && !filterRequest.getReligion().isEmpty()) {
             criteriaList.add(Criteria.where("religion").in(filterRequest.getReligion()));
+        }
+
+        if (filterRequest.getDoctrine() != null && !filterRequest.getDoctrine().isEmpty()) {
+            criteriaList.add(Criteria.where("doctrine").in(filterRequest.getDoctrine()));
         }
 
         if (filterRequest.getFamilyStatus() != null && !filterRequest.getFamilyStatus().isEmpty()) {

@@ -254,8 +254,8 @@ public class UserService implements UserDetailsService {
         return ResponseEntity.ok("Password updated successfully");
     }
 
-    public User getProfile(@NotNull String email) {
-        User user = userRepository.findByEmail(email);
+    public User getProfile(@NotNull String userId) {
+        User user = userRepository.findById(userId).orElse(null);
 
         if (user == null) {
             throw new IllegalArgumentException("User not found");
@@ -298,8 +298,72 @@ public class UserService implements UserDetailsService {
         userRepository.save(user);
     }
 
-    public Page<User> findAllUsers(UserFilterRequest filterRequest) {
-        return userRepository.findFilteredUsers(filterRequest);
+    public Page<User> findAllUsers(UserFilterRequest filterRequest, String age, String likeme, String userId) {
+        Page<User> page = userRepository.findFilteredUsers(filterRequest);
+        // if the age is asc we will sort in asc order else we will sort in desc order
+        if (!age.equals("null")) {
+            if (age.equals("asc")) {
+                return getUsersSortedByAge(page.getPageable().getPageNumber(), page.getPageable().getPageSize(), "asc");
+            } else {
+                return getUsersSortedByAge(page.getPageable().getPageNumber(), page.getPageable().getPageSize(),
+                        "desc");
+            }
+
+        }
+        /*
+         * this is the userAlgorithm class
+         * public class UserAlgorithm {
+         * 
+         * @Id
+         * private String id;
+         * 
+         * private String userId;
+         * private ArrayList<Integer> answer = new ArrayList<>();
+         * private ArrayList<UserPersentage> usersLikeMe = new ArrayList<>();
+         * }
+         * 
+         */
+
+        /*
+         * this is the userPersentage class
+         * public class UserPersentage {
+         * 
+         * private String userId;
+         * private Double presentage;
+         * 
+         * }
+         * 
+         */
+
+        // now if the likeme is asc we will sort in asc order else we will sort in desc
+        // order
+        // the userslikeme is sorted so we need to sort each to elements in the page
+        // based on the index of the user in the userslikeme
+        if (!likeme.equals("null")) {
+            ArrayList<User> users = new ArrayList<>(page.getContent());
+            UserAlgorithm userAlgorithm = userAlgorithmRepository.findByUserId(userId);
+            if (userAlgorithm == null) {
+                throw new RuntimeException("User algorithm not found");
+            }
+            List<UserPersentage> usersLikeMe = userAlgorithm.getUsersLikeMe();
+            // Sort the list based on the required direction
+            if (likeme.equalsIgnoreCase("asc")) {
+                Collections.reverse(usersLikeMe); // Reverse the list if asc is required
+            }
+            // Pagination logic
+            int start = Math.min(page.getPageable().getPageNumber() * page.getPageable().getPageSize(),
+                    usersLikeMe.size());
+            int end = Math.min((page.getPageable().getPageNumber() + 1) * page.getPageable().getPageSize(),
+                    usersLikeMe.size());
+            List<UserPersentage> paginatedList = usersLikeMe.subList(start, end);
+            List<User> sortedUsers = new ArrayList<>();
+            for (UserPersentage userPersentage : paginatedList) {
+                sortedUsers.add(users.stream().filter(user1 -> user1.getId().equals(userPersentage.getUserId()))
+                        .findFirst().orElse(null));
+            }
+            return new PageImpl<>(sortedUsers);
+        }
+        return page;
     }
 
     public ArrayList<UserPersentage> findUsersLikeMe(String userId) {
@@ -347,5 +411,20 @@ public class UserService implements UserDetailsService {
 
         List<UserPersentage> paginatedList = usersLikeMe.subList(start, end);
         return new PageImpl<>(paginatedList);
+    }
+
+    public void favoriteUser(String userId, String favoriteUserId) {
+        User user = userRepository.findById(userId).orElse(null);
+        if (user == null) {
+            throw new IllegalArgumentException("User not found");
+        }
+
+        if (user.getFavoriteUsers().contains(favoriteUserId)) {
+            user.getFavoriteUsers().remove(favoriteUserId);
+        } else {
+            user.getFavoriteUsers().add(favoriteUserId);
+        }
+
+        userRepository.save(user);
     }
 }

@@ -16,9 +16,11 @@ public class UserFilterRequest {
     private List<String> maritalStatus = new ArrayList<>();
     private List<String> gender = new ArrayList<>();
     private List<String> city = new ArrayList<>();
+    private List<String> country = new ArrayList<>();
     private List<String> religion = new ArrayList<>();
     private List<String> familyStatus = new ArrayList<>();
     private List<String> marriageType = new ArrayList<>();
+    private List<String> doctrine = new ArrayList<>();
     private Integer minAge;
     private Integer maxAge;
     private int page = 0;   // Default page

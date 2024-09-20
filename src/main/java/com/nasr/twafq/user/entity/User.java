@@ -60,6 +60,7 @@ public class User extends AuditableBase implements UserDetails {
     // Verification
     private Boolean isVerifiedUser;
     private ArrayList<String> usersContactWith = new ArrayList<>();
+    private ArrayList<String> favoriteUsers = new ArrayList<>();
 
     @Pattern(regexp = "^[0-9]{11}$", message = "invalid mobile number entered")
     @NotNull(message = "phone shouldn't be null")
