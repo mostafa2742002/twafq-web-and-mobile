@@ -77,7 +77,8 @@ public class SecurityConfig {
                                 "/api/colors",
                                 "/api/users/filter",
                                 "/api/blogs",
-                                "/api/blog/")
+                                "/api/blog",
+                                "/api/blog/**")
                         .permitAll()
                         .anyRequest().authenticated())
                 .csrf(AbstractHttpConfigurer::disable)
