@@ -20,14 +20,17 @@ import java.util.*;
 import com.nasr.twafq.blog.entity.PageResponse;
 import com.nasr.twafq.dto.ResponseDto;
 import com.nasr.twafq.email.EmailService;
+import com.nasr.twafq.exception.ResourceNotFoundException;
 import com.nasr.twafq.jwt.JwtResponse;
 import com.nasr.twafq.jwt.JwtService;
 import com.nasr.twafq.user.dto.LoginDTO;
 import com.nasr.twafq.user.dto.UserDTO;
 import com.nasr.twafq.user.dto.UserFilterRequest;
+import com.nasr.twafq.user.entity.Story;
 import com.nasr.twafq.user.entity.User;
 import com.nasr.twafq.user.entity.UserAlgorithm;
 import com.nasr.twafq.user.entity.UserPersentage;
+import com.nasr.twafq.user.repo.StoryRepository;
 import com.nasr.twafq.user.repo.UserAlgorithmRepository;
 import com.nasr.twafq.user.repo.UserRepository;
 
@@ -45,6 +48,7 @@ public class UserService implements UserDetailsService {
     private final EmailService emailService;
     private final ColorAlgorithm colorAlgorithm;
     private final UserAlgorithmRepository userAlgorithmRepository;
+    private final StoryRepository storyRepository;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -426,5 +430,71 @@ public class UserService implements UserDetailsService {
         }
 
         userRepository.save(user);
+    }
+
+    public ArrayList<User> getFavoriteUsers(String userId) {
+        Optional<User> user = userRepository.findById(userId);
+        if (!user.isPresent()) {
+            throw new ResourceNotFoundException("User", "userId", userId);
+        }
+        ArrayList<User> fav = new ArrayList<>();
+        for (int i = 0; i < user.get().getFavoriteUsers().size(); i++) {
+            String id = user.get().getFavoriteUsers().get(i);
+            Optional<User> userSaved = userRepository.findById(id);
+            if (userSaved.isPresent())
+                fav.add(userSaved.get());
+        }
+
+        return fav;
+    }
+
+    public void addStory(String userId, String story) {
+        User user = userRepository.findById(userId).orElse(null);
+        if (user == null) {
+            throw new IllegalArgumentException("User not found");
+        }
+
+        Story newStory = new Story();
+        newStory.setStory(story);
+        newStory.setUserId(userId);
+
+        storyRepository.save(newStory);
+
+    }
+
+    public List<Story> getStories() {
+        return storyRepository.findAll();
+    }
+
+    public User getUserByToken(String token) {
+        String email = jwtService.extractUserName(token);
+
+        if (email == null)
+            throw new ResourceNotFoundException("User", "email", email);
+
+        User user = userRepository.findByEmail(email);
+        if (user == null) {
+            throw new ResourceNotFoundException("User", "email", email);
+        }
+
+        return user;
+    }
+
+    public Double getUserPersentageWithTarget(String userId, String targetId) {
+        UserAlgorithm userAlgorithm = userAlgorithmRepository.findByUserId(userId);
+
+        ArrayList<UserPersentage> userPersentages = userAlgorithm.getUsersLikeMe();
+        if (userPersentages == null) {
+            throw new RuntimeException("User algorithm not found");
+        }
+
+
+        for (UserPersentage userPersentage : userPersentages) {
+            if (userPersentage.getUserId().equals(targetId)) {
+                return userPersentage.getPresentage();
+            }
+        }
+
+        throw new RuntimeException("target not found");
     }
 }

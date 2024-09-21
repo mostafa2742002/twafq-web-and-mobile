@@ -1,6 +1,7 @@
 package com.nasr.twafq.user.controller;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -27,6 +28,7 @@ import com.nasr.twafq.user.dto.LoginDTO;
 import com.nasr.twafq.user.dto.PasswordDTO;
 import com.nasr.twafq.user.dto.UserDTO;
 import com.nasr.twafq.user.dto.UserFilterRequest;
+import com.nasr.twafq.user.entity.Story;
 import com.nasr.twafq.user.entity.User;
 import com.nasr.twafq.user.entity.UserPersentage;
 import com.nasr.twafq.user.service.UserService;
@@ -173,8 +175,9 @@ public class UserController {
         })
         @PostMapping("/users/filter")
         public ResponseEntity<Page<User>> findAllUsers(@RequestBody UserFilterRequest filterRequest,
-                        @RequestParam(defaultValue = "null") String age, @RequestParam(defaultValue = "null") String likeme,
-                        @RequestParam(defaultValue = "null")  String userId){
+                        @RequestParam(defaultValue = "null") String age,
+                        @RequestParam(defaultValue = "null") String likeme,
+                        @RequestParam(defaultValue = "null") String userId) {
                 Page<User> users = userService.findAllUsers(filterRequest, age, likeme, userId);
                 return ResponseEntity.ok(users);
         }
@@ -209,12 +212,43 @@ public class UserController {
                         @RequestParam(defaultValue = "desc") String sortDirection) {
                 return userService.getAllUsersLikeMe(userId, page, size, sortDirection);
         }
-        
+
         @PostMapping("/user/favorite")
-        public ResponseEntity<ResponseDto> favoriteUser(@RequestParam String userId, @RequestParam String favoriteUserId) {
+        public ResponseEntity<ResponseDto> favoriteUser(@RequestParam String userId,
+                        @RequestParam String favoriteUserId) {
                 userService.favoriteUser(userId, favoriteUserId);
                 return ResponseEntity
                                 .status(HttpStatus.OK)
                                 .body(new ResponseDto(ServerConstants.STATUS_200, ServerConstants.MESSAGE_200));
         }
+
+        @GetMapping("user/favorite")
+        public ResponseEntity<ArrayList<User>> getFavoriteUsers(@RequestParam String userId) {
+                return ResponseEntity.status(HttpStatus.OK).body(userService.getFavoriteUsers(userId));
+        }
+
+        @PostMapping("/user/story")
+        public ResponseEntity<ResponseDto> addStory(@RequestParam String userId, @RequestParam String story) {
+                userService.addStory(userId, story);
+                return ResponseEntity
+                                .status(HttpStatus.OK)
+                                .body(new ResponseDto(ServerConstants.STATUS_200, ServerConstants.MESSAGE_200));
+        }
+
+        @GetMapping("/user/stories")
+        public ResponseEntity<List<Story>> getStories() {
+                return ResponseEntity.status(HttpStatus.OK).body(userService.getStories());
+        }
+
+        @GetMapping("/user/data/by-token")
+        public ResponseEntity<User> getUserByToken(@RequestParam String token) {
+                return ResponseEntity.status(HttpStatus.OK).body(userService.getUserByToken(token));
+        }
+
+        @GetMapping("/user/likeme/target")
+        public ResponseEntity<Double> getUserPersentageWithTarget(@RequestParam String userId, @RequestParam String targetId) {
+                return ResponseEntity.status(HttpStatus.OK).body(userService.getUserPersentageWithTarget(userId, targetId));
+        }
+
+
 }

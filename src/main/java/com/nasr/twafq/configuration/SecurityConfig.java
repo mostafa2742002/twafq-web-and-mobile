@@ -80,7 +80,8 @@ public class SecurityConfig {
                                 "/api/blog",
                                 "/api/blog/**",
                                 "/api/profile",
-                                "/api/profile/**")
+                                "/api/profile/**",
+                                "/api/user/stories")
                         .permitAll()
                         .anyRequest().authenticated())
                 .csrf(AbstractHttpConfigurer::disable)
