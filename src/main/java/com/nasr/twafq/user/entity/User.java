@@ -3,7 +3,8 @@ package com.nasr.twafq.user.entity;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-
+import java.util.UUID;
+import java.util.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.security.core.GrantedAuthority;
@@ -70,6 +71,9 @@ public class User extends AuditableBase implements UserDetails {
     private int age;
     private int weight;
     private int height;
+    // we need to add the time for the last login and the data type is Date
+    private Date lastLogin;
+    
 
     // Updated attributes as List<String> to handle array-like inputs
     private List<String> gender = new ArrayList<>();

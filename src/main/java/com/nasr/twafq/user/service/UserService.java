@@ -96,7 +96,7 @@ public class UserService implements UserDetailsService {
 
             if (user.isEmailVerified() == false)
                 throw new IllegalArgumentException("Email not verified");
-
+            user.setLastLogin(new Date()); // this will be look like this 2023-07-07T14:14:13.000+00:00
             return new JwtResponse(jwtService.generateToken(user), jwtService.generateRefreshToken(user), user);
         }
         throw new IllegalArgumentException("Invalid credentials");
