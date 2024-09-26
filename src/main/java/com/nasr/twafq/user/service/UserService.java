@@ -5,6 +5,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 
 import com.nasr.twafq.blog.entity.PageResponse;
+import com.nasr.twafq.constants.UserCache;
 import com.nasr.twafq.dto.ResponseDto;
 import com.nasr.twafq.email.EmailService;
 import com.nasr.twafq.exception.ResourceNotFoundException;
@@ -26,6 +28,7 @@ import com.nasr.twafq.jwt.JwtService;
 import com.nasr.twafq.user.dto.LoginDTO;
 import com.nasr.twafq.user.dto.UserDTO;
 import com.nasr.twafq.user.dto.UserFilterRequest;
+import com.nasr.twafq.user.dto.UserUpdateDTO;
 import com.nasr.twafq.user.entity.Story;
 import com.nasr.twafq.user.entity.User;
 import com.nasr.twafq.user.entity.UserAlgorithm;
@@ -37,6 +40,7 @@ import com.nasr.twafq.user.repo.UserRepository;
 import jakarta.mail.MessagingException;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
+import nonapi.io.github.classgraph.json.Id;
 
 @Service
 @AllArgsConstructor
@@ -49,6 +53,7 @@ public class UserService implements UserDetailsService {
     private final ColorAlgorithm colorAlgorithm;
     private final UserAlgorithmRepository userAlgorithmRepository;
     private final StoryRepository storyRepository;
+    private final FilterService filterService;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -70,7 +75,7 @@ public class UserService implements UserDetailsService {
         user.setEmailVerified(false);
         user.setVerificationToken(verificationToken);
         user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
-
+        user.setLastLogin(new Date());
         User savedUser = userRepository.save(user);
         String subject = "Verify Your Email";
 
@@ -155,15 +160,20 @@ public class UserService implements UserDetailsService {
         }
     }
 
-    public ResponseEntity<String> updateProfile(UserDTO user, String userId) {
+    public ResponseEntity<String> updateProfile(UserUpdateDTO user, String userId) {
 
         // Retrieve the user from the repository
+        if (userRepository.findById(userId).orElse(null) == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+        }
+
         User existingUser = userRepository.findById(userId).orElse(null);
 
         if (existingUser == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
         }
 
+        existingUser.setLastLogin(new Date());
         if (user.getFirstName() != null && !user.getFirstName().isEmpty())
             existingUser.setFirstName(user.getFirstName());
 
@@ -175,10 +185,6 @@ public class UserService implements UserDetailsService {
 
         if (user.getEmail() != null && !user.getEmail().isEmpty())
             existingUser.setEmail(user.getEmail());
-
-        if (user.getPassword() != null && !user.getPassword().isEmpty())
-            existingUser.setPassword(user.getPassword()); // Be cautious with password updates, consider adding
-                                                          // validation
 
         // Update additional attributes if present
         if (user.getGender() != null)
@@ -302,20 +308,23 @@ public class UserService implements UserDetailsService {
         userRepository.save(user);
     }
 
-    public Page<User> findAllUsers(UserFilterRequest filterRequest, String age, String likeme, String userId) {
-        Page<User> page = userRepository.findFilteredUsers(filterRequest);
-        // if the age is asc we will sort in asc order else we will sort in desc order
+    public PageResponse<User> findAllUsers(UserFilterRequest filterRequest, String age, String likeme) {
+        ArrayList<User> filteredUsers = (ArrayList<User>) filterService.filterUsers(filterRequest);
+        age = age.toLowerCase();
+        likeme = likeme.toLowerCase();
+
         if (!age.equals("null")) {
+
             if (age.equals("asc")) {
-                return getUsersSortedByAge(page.getPageable().getPageNumber(), page.getPageable().getPageSize(), "asc");
+                filteredUsers.sort(Comparator.comparing(User::getAge));
             } else {
-                return getUsersSortedByAge(page.getPageable().getPageNumber(), page.getPageable().getPageSize(),
-                        "desc");
+                filteredUsers.sort(Comparator.comparing(User::getAge).reversed());
             }
 
         }
+
         /*
-         * this is the userAlgorithm class
+         * @Document(collection = "userAlgorithm")
          * public class UserAlgorithm {
          * 
          * @Id
@@ -326,10 +335,6 @@ public class UserService implements UserDetailsService {
          * private ArrayList<UserPersentage> usersLikeMe = new ArrayList<>();
          * }
          * 
-         */
-
-        /*
-         * this is the userPersentage class
          * public class UserPersentage {
          * 
          * private String userId;
@@ -339,35 +344,72 @@ public class UserService implements UserDetailsService {
          * 
          */
 
-        // now if the likeme is asc we will sort in asc order else we will sort in desc
-        // order
-        // the userslikeme is sorted so we need to sort each to elements in the page
-        // based on the index of the user in the userslikeme
-        if (!likeme.equals("null")) {
-            ArrayList<User> users = new ArrayList<>(page.getContent());
-            UserAlgorithm userAlgorithm = userAlgorithmRepository.findByUserId(userId);
+        if (!likeme.equals("null") && !filterRequest.getUserId().equals("null")) {
+            // now we will get the user algorithm for the user and get the users like me and
+            // we will sort the filteredUsers based on the presentage of the users like me
+
+            UserAlgorithm userAlgorithm = userAlgorithmRepository.findByUserId(filterRequest.getUserId());
             if (userAlgorithm == null) {
                 throw new RuntimeException("User algorithm not found");
             }
-            List<UserPersentage> usersLikeMe = userAlgorithm.getUsersLikeMe();
-            // Sort the list based on the required direction
-            if (likeme.equalsIgnoreCase("asc")) {
-                Collections.reverse(usersLikeMe); // Reverse the list if asc is required
+
+            ArrayList<UserPersentage> userPersentages = userAlgorithm.getUsersLikeMe();
+            if (userPersentages == null) {
+                throw new RuntimeException("User algorithm not found");
             }
-            // Pagination logic
-            int start = Math.min(page.getPageable().getPageNumber() * page.getPageable().getPageSize(),
-                    usersLikeMe.size());
-            int end = Math.min((page.getPageable().getPageNumber() + 1) * page.getPageable().getPageSize(),
-                    usersLikeMe.size());
-            List<UserPersentage> paginatedList = usersLikeMe.subList(start, end);
-            List<User> sortedUsers = new ArrayList<>();
-            for (UserPersentage userPersentage : paginatedList) {
-                sortedUsers.add(users.stream().filter(user1 -> user1.getId().equals(userPersentage.getUserId()))
-                        .findFirst().orElse(null));
-            }
-            return new PageImpl<>(sortedUsers);
+
+            // sort the filteredUsers based on the presentage of the users like me
+            filteredUsers.sort((user1, user2) -> {
+                Double presentage1 = 0.0;
+                Double presentage2 = 0.0;
+
+                for (UserPersentage userPersentage : userPersentages) {
+                    if (userPersentage.getUserId().equals(user1.getId())) {
+                        presentage1 = userPersentage.getPresentage();
+                    }
+
+                    if (userPersentage.getUserId().equals(user2.getId())) {
+                        presentage2 = userPersentage.getPresentage();
+                    }
+                }
+
+                return presentage1.compareTo(presentage2);
+            });
+
         }
-        return page;
+
+        /*
+         * 
+         * public class PageResponse<T> {
+         * private List<T> content;
+         * private int number;
+         * private int size;
+         * private long totalElements;
+         * private int totalPages;
+         * private boolean first;
+         * private boolean last;
+         * 
+         * 
+         */
+
+         // we will get the page and size from the filterRequest then we will make the pageResponse based on the filteredUsers
+        int page = filterRequest.getPage();
+        int size = filterRequest.getSize();
+
+        int start = Math.min(page * size, filteredUsers.size());
+        int end = Math.min((page + 1) * size, filteredUsers.size());
+
+        List<User> paginatedList = filteredUsers.subList(start, end);
+        PageResponse<User> pageResponse = new PageResponse<>();
+        pageResponse.setContent(paginatedList);
+        pageResponse.setNumber(page);
+        pageResponse.setSize(size);
+        pageResponse.setTotalElements(filteredUsers.size());
+        pageResponse.setTotalPages((int) Math.ceil(filteredUsers.size() / size));
+        pageResponse.setFirst(page == 0);
+        pageResponse.setLast(end == filteredUsers.size());
+
+        return pageResponse;
     }
 
     public ArrayList<UserPersentage> findUsersLikeMe(String userId) {
@@ -423,6 +465,7 @@ public class UserService implements UserDetailsService {
             throw new IllegalArgumentException("User not found");
         }
 
+        user.setLastLogin(new Date());
         if (user.getFavoriteUsers().contains(favoriteUserId)) {
             user.getFavoriteUsers().remove(favoriteUserId);
         } else {
@@ -434,9 +477,12 @@ public class UserService implements UserDetailsService {
 
     public ArrayList<User> getFavoriteUsers(String userId) {
         Optional<User> user = userRepository.findById(userId);
+
         if (!user.isPresent()) {
             throw new ResourceNotFoundException("User", "userId", userId);
         }
+
+        user.get().setLastLogin(new Date());
         ArrayList<User> fav = new ArrayList<>();
         for (int i = 0; i < user.get().getFavoriteUsers().size(); i++) {
             String id = user.get().getFavoriteUsers().get(i);
@@ -444,7 +490,7 @@ public class UserService implements UserDetailsService {
             if (userSaved.isPresent())
                 fav.add(userSaved.get());
         }
-
+        userRepository.save(user.get());
         return fav;
     }
 
@@ -453,7 +499,7 @@ public class UserService implements UserDetailsService {
         if (user == null) {
             throw new IllegalArgumentException("User not found");
         }
-
+        user.setLastLogin(new Date());
         Story newStory = new Story();
         newStory.setStory(story);
         newStory.setUserId(userId);
@@ -473,10 +519,12 @@ public class UserService implements UserDetailsService {
             throw new ResourceNotFoundException("User", "email", email);
 
         User user = userRepository.findByEmail(email);
+
         if (user == null) {
             throw new ResourceNotFoundException("User", "email", email);
         }
-
+        user.setLastLogin(new Date());
+        userRepository.save(user);
         return user;
     }
 
@@ -488,7 +536,6 @@ public class UserService implements UserDetailsService {
             throw new RuntimeException("User algorithm not found");
         }
 
-
         for (UserPersentage userPersentage : userPersentages) {
             if (userPersentage.getUserId().equals(targetId)) {
                 return userPersentage.getPresentage();
@@ -496,5 +543,46 @@ public class UserService implements UserDetailsService {
         }
 
         throw new RuntimeException("target not found");
+    }
+
+    public ArrayList<User> getContactWith(String userId) {
+        User user = userRepository.findById(userId).orElse(null);
+        if (user == null) {
+            throw new IllegalArgumentException("User not found");
+        }
+        user.setLastLogin(new Date());
+        ArrayList<User> contacts = new ArrayList<>();
+        for (int i = 0; i < user.getUsersContactWith().size(); i++) {
+            String id = user.getUsersContactWith().get(i);
+            Optional<User> userSaved = userRepository.findById(id);
+            if (userSaved.isPresent())
+                contacts.add(userSaved.get());
+        }
+        userRepository.save(user);
+        return contacts;
+    }
+
+    public void contactUs(String userId, String message, String intent)
+            throws MessagingException, InterruptedException {
+        if (userRepository.findById(userId).orElse(null) == null) {
+            throw new ResourceNotFoundException("User", "userId", userId);
+        }
+
+        User user = userRepository.findById(userId).orElse(null);
+        String subject;
+        if (intent.equals("consultant")) {
+            subject = "New Message From User To Consultant";
+        } else {
+            subject = "New Message From User To Contact Us";
+        }
+
+        // we will make a multi line string to make it more readable
+        String body = "User ID: " + userId + "\n" +
+                "User Name: " + user.getFirstName() + " " + user.getLastName() + "\n" +
+                "User Email: " + user.getEmail() + "\n" +
+                "User Phone: " + user.getPhone() + "\n" +
+                "Message: " + message;
+
+        emailService.sendEmail("mostafa19500mahmoud@gmail.com", subject, body);
     }
 }

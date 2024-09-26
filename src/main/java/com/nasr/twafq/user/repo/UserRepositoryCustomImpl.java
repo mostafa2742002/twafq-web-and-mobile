@@ -1,5 +1,6 @@
 package com.nasr.twafq.user.repo;
 
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -9,8 +10,10 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
+
 import java.util.ArrayList;
 import java.util.List;
+
 import com.nasr.twafq.user.dto.UserFilterRequest;
 import com.nasr.twafq.user.entity.User;
 
@@ -25,6 +28,9 @@ public class UserRepositoryCustomImpl implements UserRepositoryCustom {
         Criteria criteria = new Criteria();
         List<Criteria> criteriaList = new ArrayList<>();
 
+        if (filterRequest.getUserId() != null && !filterRequest.getUserId().isEmpty()) {
+            criteria = Criteria.where("id").ne(new ObjectId(filterRequest.getUserId()));
+        }
         // Add conditions to the criteria list based on filterRequest
         if (filterRequest.getNationality() != null && !filterRequest.getNationality().isEmpty()) {
             criteriaList.add(Criteria.where("nationality").in(filterRequest.getNationality()));

@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class UserFilterRequest {
 
+    private String userId;
     private List<String> nationality = new ArrayList<>();
     private List<String> countryOfResidence = new ArrayList<>();
     private List<String> maritalStatus = new ArrayList<>();

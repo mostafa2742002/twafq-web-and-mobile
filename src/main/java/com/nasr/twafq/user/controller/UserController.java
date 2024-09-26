@@ -24,10 +24,12 @@ import com.nasr.twafq.blog.entity.PageResponse;
 import com.nasr.twafq.constants.ServerConstants;
 import com.nasr.twafq.dto.ErrorResponseDto;
 import com.nasr.twafq.dto.ResponseDto;
+import com.nasr.twafq.user.dto.ContactUsDTO;
 import com.nasr.twafq.user.dto.LoginDTO;
 import com.nasr.twafq.user.dto.PasswordDTO;
 import com.nasr.twafq.user.dto.UserDTO;
 import com.nasr.twafq.user.dto.UserFilterRequest;
+import com.nasr.twafq.user.dto.UserUpdateDTO;
 import com.nasr.twafq.user.entity.Story;
 import com.nasr.twafq.user.entity.User;
 import com.nasr.twafq.user.entity.UserPersentage;
@@ -123,7 +125,8 @@ public class UserController {
                         )) })
 
         @PutMapping("/profile")
-        public ResponseEntity<String> updateProfile(@RequestBody @NotNull UserDTO user, @RequestParam String user_id) {
+        public ResponseEntity<String> updateProfile(@RequestBody @NotNull UserUpdateDTO user,
+                        @RequestParam String user_id) {
                 return userService.updateProfile(user, user_id);
         }
 
@@ -174,11 +177,10 @@ public class UserController {
                         @ApiResponse(responseCode = "500", description = "HTTP Status Internal Server Error", content = @Content(schema = @Schema(implementation = ErrorResponseDto.class)))
         })
         @PostMapping("/users/filter")
-        public ResponseEntity<Page<User>> findAllUsers(@RequestBody UserFilterRequest filterRequest,
+        public ResponseEntity<PageResponse<User>> findAllUsers(@RequestBody UserFilterRequest filterRequest,
                         @RequestParam(defaultValue = "null") String age,
-                        @RequestParam(defaultValue = "null") String likeme,
-                        @RequestParam(defaultValue = "null") String userId) {
-                Page<User> users = userService.findAllUsers(filterRequest, age, likeme, userId);
+                        @RequestParam(defaultValue = "null") String likeme) {
+                PageResponse<User> users = userService.findAllUsers(filterRequest, age, likeme);
                 return ResponseEntity.ok(users);
         }
 
@@ -246,9 +248,25 @@ public class UserController {
         }
 
         @GetMapping("/user/likeme/target")
-        public ResponseEntity<Double> getUserPersentageWithTarget(@RequestParam String userId, @RequestParam String targetId) {
-                return ResponseEntity.status(HttpStatus.OK).body(userService.getUserPersentageWithTarget(userId, targetId));
+        public ResponseEntity<Double> getUserPersentageWithTarget(@RequestParam String userId,
+                        @RequestParam String targetId) {
+                return ResponseEntity.status(HttpStatus.OK)
+                                .body(userService.getUserPersentageWithTarget(userId, targetId));
         }
 
+        @GetMapping("/user/contact-with")
+        public ResponseEntity<List<User>> getContactWith(@RequestParam String userId) {
+                return ResponseEntity.status(HttpStatus.OK).body(userService.getContactWith(userId));
+        }
 
+        @PostMapping("/user/contactus")
+        public ResponseEntity<ResponseDto> contactUs(@RequestBody ContactUsDTO contactUsDTO) throws MessagingException, InterruptedException {
+                String userId = contactUsDTO.getUserId();
+                String message = contactUsDTO.getMessage();
+                String intent = contactUsDTO.getIntent();
+                userService.contactUs(userId, message, intent);
+                return ResponseEntity
+                                .status(HttpStatus.OK)
+                                .body(new ResponseDto(ServerConstants.STATUS_200, ServerConstants.MESSAGE_200));
+        }
 }
