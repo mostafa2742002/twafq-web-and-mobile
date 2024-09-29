@@ -8,12 +8,14 @@ import com.nasr.twafq.payments.paymob.entity.user.UserPayment;
 @Repository
 public interface UserPaymentRepository extends MongoRepository<UserPayment, String> {
 
-        UserPayment findByPaymentId(String paymentId);
+        UserPayment findByPaymentId(long paymentId);
 
         UserPayment findByUserId(String userId);
 
         void deleteByPaymentId(String paymentId);
 
         void deleteByUserId(String userId);
+
+        UserPayment findByEmail(String email);
 
 }

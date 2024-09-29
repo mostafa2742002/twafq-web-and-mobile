@@ -59,7 +59,7 @@ public class User extends AuditableBase implements UserDetails {
     private ArrayList<Integer> ColorAnswers = new ArrayList<>();
 
     // Verification
-    private Boolean isVerifiedUser;
+    private Boolean isVerifiedUser = false;
     private ArrayList<String> usersContactWith = new ArrayList<>();
     private ArrayList<String> favoriteUsers = new ArrayList<>();
     private ArrayList<String> myStory = new ArrayList<>();

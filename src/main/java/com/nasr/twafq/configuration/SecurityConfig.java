@@ -81,7 +81,11 @@ public class SecurityConfig {
                                 "/api/blog/**",
                                 "/api/profile",
                                 "/api/profile/**",
-                                "/api/user/stories")
+                                "/api/user/stories",
+                                "/create-verify-intent",
+                                "/create-add-user-intent",
+                                "/callback/verify",
+                                "/callback/add-user")
                         .permitAll()
                         .anyRequest().authenticated())
                 .csrf(AbstractHttpConfigurer::disable)

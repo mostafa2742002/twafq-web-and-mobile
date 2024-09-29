@@ -64,6 +64,11 @@ public class PaymentService {
       throw new RuntimeException("User not found");
     }
 
+    UserPayment userPaymenttemp = userPaymentRepository.findByEmail(user.getEmail());
+    if (userPaymenttemp != null) {
+      userPaymentRepository.delete(userPaymenttemp);
+    }
+
     request.setBilling_data(new BillingData(user.getFirstName(), user.getLastName(), "+2" + user.getPhone(),
         "egypt", user.getEmail()));
 
@@ -90,6 +95,7 @@ public class PaymentService {
       UserPayment userPayment = new UserPayment();
       userPayment.setUserId(userId);
       userPayment.setPaymentId(paymentResponse.getId());
+      userPayment.setEmail(user.getEmail());
       userPayment.setIntent("verify");
       userPaymentRepository.save(userPayment);
     });
@@ -105,7 +111,7 @@ public class PaymentService {
       return;
     Order order = transactionCallback.getObj().getOrder();
 
-    UserPayment userPayment = userPaymentRepository.findByUserId(order.getShippingData().getEmail());
+    UserPayment userPayment = userPaymentRepository.findByEmail(order.getShippingData().getEmail());
 
     if (userPayment == null) {
       throw new RuntimeException("User payment not found");
@@ -136,6 +142,11 @@ public class PaymentService {
       throw new RuntimeException("User not found");
     }
 
+    UserPayment userPaymenttemp = userPaymentRepository.findByEmail(user.getEmail());
+    if (userPaymenttemp != null) {
+      userPaymentRepository.delete(userPaymenttemp);
+    }
+
     request.setBilling_data(new BillingData(user.getFirstName(), user.getLastName(), "+2" + user.getPhone(),
         "egypt", user.getEmail()));
 
@@ -163,6 +174,7 @@ public class PaymentService {
       userPayment.setUserId(userId);
       userPayment.setTargetId(targetId);
       userPayment.setPaymentId(paymentResponse.getId());
+      userPayment.setEmail(user.getEmail());
       userPayment.setIntent("addUser");
       userPaymentRepository.save(userPayment);
     });
@@ -178,8 +190,7 @@ public class PaymentService {
     if (!transactionCallback.getObj().isSuccess())
       return;
     Order order = transactionCallback.getObj().getOrder();
-
-    UserPayment userPayment = userPaymentRepository.findByUserId(order.getShippingData().getEmail());
+    UserPayment userPayment = userPaymentRepository.findByEmail(order.getShippingData().getEmail());
 
     if (userPayment == null) {
       throw new RuntimeException("User payment not found");

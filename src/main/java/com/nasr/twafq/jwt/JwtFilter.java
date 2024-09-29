@@ -42,7 +42,8 @@ public class JwtFilter extends OncePerRequestFilter {
                 || path.startsWith("/api/colors") || path.startsWith("/api/users/filter") || path.startsWith("/api/blogs") || 
                 path.startsWith("/api/blog/") || path.startsWith("/api/blog") || path.startsWith("/api/blog/**")
                 || path.startsWith("/api/profile") || path.startsWith("/api/profile/") || path.startsWith("/api/profile/**") ||
-                path.startsWith("/api/user/stories");
+                path.startsWith("/api/user/stories") || path.startsWith("/create-verify-intent") || path.startsWith("/create-add-user-intent")
+                || path.startsWith("/callback/verify") || path.startsWith("/callback/add-user");
     }
 
     @Override

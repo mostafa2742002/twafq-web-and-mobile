@@ -269,4 +269,9 @@ public class UserController {
                                 .status(HttpStatus.OK)
                                 .body(new ResponseDto(ServerConstants.STATUS_200, ServerConstants.MESSAGE_200));
         }
+
+        @GetMapping("/user/phone")
+        public ResponseEntity<ResponseDto> getUserPhone(@RequestParam String userId) {
+                return ResponseEntity.status(HttpStatus.OK).body(new ResponseDto(ServerConstants.STATUS_200, userService.getUserPhone(userId)));
+        }
 }

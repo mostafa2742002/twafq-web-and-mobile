@@ -20,6 +20,7 @@ public class UserPayment {
 
     private String userId;
     // private String courseId;
+    private String email;
     private String intent;
     private String targetId;
     private String paymentId;

@@ -54,6 +54,7 @@ public class UserService implements UserDetailsService {
     private final UserAlgorithmRepository userAlgorithmRepository;
     private final StoryRepository storyRepository;
     private final FilterService filterService;
+    private final UserCache userCache;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -77,6 +78,7 @@ public class UserService implements UserDetailsService {
         user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
         user.setLastLogin(new Date());
         User savedUser = userRepository.save(user);
+        userCache.refresh();
         String subject = "Verify Your Email";
 
         colorAlgorithm.calculateColorPresentage(savedUser.getId(), userDTO.getColorAnswers());
@@ -270,6 +272,7 @@ public class UserService implements UserDetailsService {
         if (user == null) {
             throw new IllegalArgumentException("User not found");
         }
+        user.setPhone("");
         return user;
     }
 
@@ -347,7 +350,7 @@ public class UserService implements UserDetailsService {
         if (!likeme.equals("null") && !filterRequest.getUserId().equals("null")) {
             // now we will get the user algorithm for the user and get the users like me and
             // we will sort the filteredUsers based on the presentage of the users like me
-
+            // System.out.println("likeme");
             UserAlgorithm userAlgorithm = userAlgorithmRepository.findByUserId(filterRequest.getUserId());
             if (userAlgorithm == null) {
                 throw new RuntimeException("User algorithm not found");
@@ -372,10 +375,12 @@ public class UserService implements UserDetailsService {
                         presentage2 = userPersentage.getPresentage();
                     }
                 }
-
+                System.out.println(presentage1 + " " + presentage2);
                 return presentage1.compareTo(presentage2);
             });
 
+            if (likeme.equals("desc"))
+                Collections.reverse(filteredUsers);
         }
 
         /*
@@ -392,7 +397,8 @@ public class UserService implements UserDetailsService {
          * 
          */
 
-         // we will get the page and size from the filterRequest then we will make the pageResponse based on the filteredUsers
+        // we will get the page and size from the filterRequest then we will make the
+        // pageResponse based on the filteredUsers
         int page = filterRequest.getPage();
         int size = filterRequest.getSize();
 
@@ -584,5 +590,14 @@ public class UserService implements UserDetailsService {
                 "Message: " + message;
 
         emailService.sendEmail("mostafa19500mahmoud@gmail.com", subject, body);
+    }
+
+    public String getUserPhone(String userId) {
+        User user = userRepository.findById(userId).orElse(null);
+        if (user == null) {
+            throw new IllegalArgumentException("User not found");
+        }
+        return user.getPhone();
+
     }
 }
