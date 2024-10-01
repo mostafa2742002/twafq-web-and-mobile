@@ -96,6 +96,18 @@ public class UserController {
                 return ResponseEntity.ok(userService.getProfile(userId));
         }
 
+        @Operation(summary = "Resend verification email", description = "Resend verification email")
+        @ApiResponses({ @ApiResponse(responseCode = "200", description = "Email sent successfully"),
+                        @ApiResponse(responseCode = "400", description = "Bad request", content = @Content(schema = @Schema(implementation = ErrorResponseDto.class)
+
+                        )) })
+        @PostMapping("/resendemail")
+        public ResponseEntity<ResponseDto> resendEmail(@RequestParam @NotNull String email)
+                        throws MessagingException, InterruptedException {
+                String response = userService.resendVerifyEmailToken(email);
+                return ResponseEntity.status(HttpStatus.OK).body(new ResponseDto(ServerConstants.STATUS_200, response));
+        }
+
         @Operation(summary = "Validate The user email", description = "Validate The user email")
         @ApiResponses({ @ApiResponse(responseCode = "200", description = "Email verified successfully"),
                         @ApiResponse(responseCode = "400", description = "Invalid token", content = @Content(schema = @Schema(implementation = ErrorResponseDto.class))
@@ -232,6 +244,14 @@ public class UserController {
         @PostMapping("/user/story")
         public ResponseEntity<ResponseDto> addStory(@RequestParam String userId, @RequestParam String story) {
                 userService.addStory(userId, story);
+                return ResponseEntity
+                                .status(HttpStatus.OK)
+                                .body(new ResponseDto(ServerConstants.STATUS_200, ServerConstants.MESSAGE_200));
+        }
+
+        @PostMapping("/user/story/isview")
+        public ResponseEntity<ResponseDto> viewStory(@RequestParam String storyId) {
+                userService.switchStoryStatus(storyId);
                 return ResponseEntity
                                 .status(HttpStatus.OK)
                                 .body(new ResponseDto(ServerConstants.STATUS_200, ServerConstants.MESSAGE_200));

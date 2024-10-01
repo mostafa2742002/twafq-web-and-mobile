@@ -141,6 +141,28 @@ public class UserService implements UserDetailsService {
         return jwtService.generateToken(userDetails);
     }
 
+    public String resendVerifyEmailToken(String email) throws MessagingException, InterruptedException {
+        User user = userRepository.findByEmail(email);
+        if (user == null) {
+            throw new IllegalArgumentException("User not found");
+        }
+
+        if (user.isEmailVerified()) {
+            return "Email already verified";
+        }
+
+        String verificationToken = jwtService.generateToken(user);
+        user.setVerificationToken(verificationToken);
+        userRepository.save(user);
+
+        String subject = "Verify Your Email";
+        String body = "Click the link to verify your email:http://localhost:8080/api/verifyemail?token="
+                + verificationToken;
+        emailService.sendEmail(email, subject, body);
+
+        return "Verification token sent successfully";
+    }
+
     public ResponseEntity<String> verifyEmail(String token) {
         String email = jwtService.extractUserName(token);
         User user = userRepository.findByEmail(email);
@@ -512,6 +534,16 @@ public class UserService implements UserDetailsService {
 
         storyRepository.save(newStory);
 
+    }
+
+    public void switchStoryStatus(String storyId) {
+        Story story = storyRepository.findById(storyId).orElse(null);
+        if (story == null) {
+            throw new IllegalArgumentException("Story not found");
+        }
+
+        story.setIsview(!story.getIsview());
+        storyRepository.save(story);
     }
 
     public List<Story> getStories() {

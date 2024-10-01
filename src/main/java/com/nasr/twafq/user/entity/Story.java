@@ -21,5 +21,5 @@ public class Story {
 
     private String story;
 
-    private Boolean isview = true;
+    private Boolean isview = false;
 }   
