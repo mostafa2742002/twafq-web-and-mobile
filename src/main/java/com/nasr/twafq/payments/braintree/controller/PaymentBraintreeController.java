@@ -12,9 +12,11 @@ import com.nasr.twafq.payments.braintree.dto.CheckoutDTO;
 import com.nasr.twafq.user.entity.User;
 import com.nasr.twafq.user.repo.UserRepository;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 @Controller
 @RequestMapping("/payments")
-public class PaymentController {
+public class PaymentBraintreeController {
 
     @Autowired
     private BraintreeGateway gateway;
@@ -36,26 +38,33 @@ public class PaymentController {
             @RequestParam(name="paymentType", defaultValue="verify") String paymentType,
             @RequestParam(name="targetId", required=false) String targetId,
             @RequestParam(name="amount", defaultValue="10.00") String amount,
+            HttpServletRequest request,
             Model model) {
 
         // optional: validate user exists
         userRepository.findById(userId)
             .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
+        // ➊ pull the raw Authorization header (e.g. "Bearer eyJ…")
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            throw new IllegalArgumentException("Missing or invalid Authorization header");
+        }
+
         model.addAttribute("userId", userId);
         model.addAttribute("paymentType", paymentType);
         model.addAttribute("targetId", targetId);
         model.addAttribute("amount", amount);
+        model.addAttribute("jwtToken",    authHeader);
         return "checkout";  // Thymeleaf template: checkout.html
     }
 
     @GetMapping("/client_token")
     @ResponseBody
     public String getClientToken(@RequestParam("userId") String userId) {
-        User user = userRepository.findById(userId)
-                       .orElseThrow(() -> new IllegalArgumentException("User not found"));
-        if (user.getIsVerifiedUser())
-            throw new IllegalArgumentException("User already verified");
+        if(userRepository.findById(userId).isEmpty())
+            throw new IllegalArgumentException("User not found");
+        
         return gateway.clientToken().generate();
     }
 
@@ -64,13 +73,27 @@ public class PaymentController {
     public String processPayment(@RequestBody CheckoutDTO dto) {
         User user = userRepository.findById(dto.getUserId())
                        .orElseThrow(() -> new IllegalArgumentException("User not found"));
-        if (user.getIsVerifiedUser())
-            throw new IllegalArgumentException("User already verified");
+        if ("verify".equals(dto.getPaymentType())  && user.getIsVerifiedUser())
+            return "User Already Verified";
         if ("addUser".equals(dto.getPaymentType()) && dto.getTargetId() == null)
             throw new IllegalArgumentException("Target ID required");
+        if (user.getUsersContactWith().contains(dto.getTargetId()))
+            return "User Already Added";
+
+        System.out.println(dto.getAmount());
+        System.out.println(dto.getNonce());
+        System.out.println(dto.getPaymentType());
+        System.out.println(dto.getTargetId());  
+        System.out.println(dto.getUserId());
+
+
+            String rawAmt = dto.getAmount();
+        // remove anything that is not a digit or dot
+        String cleaned = rawAmt.replaceAll("[^\\d.]", "");
+        BigDecimal amount = new BigDecimal(cleaned);
 
         TransactionRequest request = new TransactionRequest()
-            .amount(new BigDecimal(dto.getAmount()))
+            .amount(amount)
             .paymentMethodNonce(dto.getNonce())
             .options()
               .submitForSettlement(true)

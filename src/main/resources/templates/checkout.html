@@ -14,31 +14,16 @@
 </head>
 <body>
 
-  <!-- Injected by Thymeleaf -->
+  <!-- Inject all page params including the JWT -->
   <script th:inline="javascript">
     /*<![CDATA[*/
     const USER_ID      = /*[[${userId}]]*/ 'unknown';
-    const INITIAL_TYPE = /*[['${paymentType}']]*/ 'verify';
-    const INITIAL_AMOUNT = /*[['${amount}']]*/ '10.00';
-    const INITIAL_TARGET = /*[['${targetId}']]*/ null;
+    const PAYMENT_TYPE = /*[[${paymentType}]]*/ 'verify';
+    const AMOUNT       = /*[[${amount}]]*/ '10.00';
+    const TARGET_ID    = /*[[${targetId}]]*/ null;
+    const JWT_TOKEN    = /*[['${jwtToken}']]*/ '';
     /*]]>*/
   </script>
-
-  <label>
-    Amount:
-    <input type="text" id="amount" th:value="${amount}">
-  </label>
-  <label>
-    Type:
-    <select id="paymentType">
-      <option th:selected="${paymentType=='verify'}" value="verify">Verify User</option>
-      <option th:selected="${paymentType=='addUser'}" value="addUser">Add Contact</option>
-    </select>
-  </label>
-  <label id="target-group" th:style="${paymentType=='addUser'}? 'display:block' : 'display:none'">
-    Target ID:
-    <input type="text" id="targetId" th:value="${targetId}">
-  </label>
 
   <div id="dropin-container"></div>
   <button id="pay-button">Pay</button>
@@ -46,57 +31,60 @@
 
   <script src="https://js.braintreegateway.com/web/dropin/1.44.0/js/dropin.min.js"></script>
   <script>
-    // Show/hide targetId field on change
-    document.querySelector('#paymentType').addEventListener('change', e => {
-      document.querySelector('#target-group').style.display =
-        e.target.value === 'addUser' ? 'block' : 'none';
-    });
+    const authHeaders = {
+      'Authorization': JWT_TOKEN
+    };
 
-    // 1️⃣ fetch token
-    fetch(`/payments/client_token?userId=${USER_ID}`)
-      .then(r => r.text())
-      .then(token => new Promise((res, rej) => {
-        braintree.dropin.create({
-          authorization: token,
-          container: '#dropin-container'
-        }, (err, instance) => err ? rej(err) : res(instance));
-      }))
-      .then(dropinInstance => {
-        document.querySelector('#pay-button').addEventListener('click', () => {
-          dropinInstance.requestPaymentMethod((err, payload) => {
-            if (err) {
-              document.querySelector('#message').textContent =
-                'Error: ' + err;
-              return;
-            }
-            const body = {
-              userId: USER_ID,
-              nonce: payload.nonce,
-              amount: document.querySelector('#amount').value,
-              paymentType: document.querySelector('#paymentType').value,
-              targetId: document.querySelector('#targetId').value || null
-            };
-            fetch('/payments/checkout', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(body)
-            })
-            .then(r => r.text())
-            .then(msg => {
-              document.querySelector('#message').textContent = msg;
-            })
-            .catch(e => {
-              document.querySelector('#message').textContent =
-                'Payment error: ' + e;
-            });
+    // 1) fetch the client token
+    fetch(`/payments/client_token?userId=${USER_ID}`, {
+      headers: authHeaders
+    })
+    .then(r => r.text())
+    .then(token => new Promise((res, rej) => {
+      braintree.dropin.create({
+        authorization: token,
+        container: '#dropin-container'
+      }, (err, instance) => err ? rej(err) : res(instance));
+    }))
+    .then(dropinInstance => {
+      document.querySelector('#pay-button').addEventListener('click', () => {
+        dropinInstance.requestPaymentMethod((err, payload) => {
+          if (err) {
+            document.querySelector('#message').textContent = 'Error: ' + err;
+            return;
+          }
+
+          // 2) build the JSON payload
+          const body = {
+            userId:      USER_ID,
+            nonce:       payload.nonce,
+            amount:      AMOUNT,
+            paymentType: PAYMENT_TYPE,
+            targetId:    TARGET_ID
+          };
+
+          // 3) POST to /payments/checkout with JWT
+          fetch('/payments/checkout', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              ...authHeaders
+            },
+            body: JSON.stringify(body)
+          })
+          .then(r => r.text())
+          .then(msg => {
+            document.querySelector('#message').textContent = msg;
+          })
+          .catch(e => {
+            document.querySelector('#message').textContent = 'Payment error: ' + e;
           });
         });
-      })
-      .catch(e => {
-        document.querySelector('#message').textContent =
-          'Drop-in error: ' + e;
       });
+    })
+    .catch(e => {
+      document.querySelector('#message').textContent = 'Drop-in error: ' + e;
+    });
   </script>
-
 </body>
 </html>

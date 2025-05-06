@@ -86,6 +86,9 @@ public class SecurityConfig {
                                 "/create-add-user-intent",
                                 "/callback/verify",
                                 "/callback/add-user")
+                                // "/payments/checkoutPage",
+                                // "/payments/client_token",
+                                // "/payments/checkout")
                         .permitAll()
                         .anyRequest().authenticated())
                 .csrf(AbstractHttpConfigurer::disable)
