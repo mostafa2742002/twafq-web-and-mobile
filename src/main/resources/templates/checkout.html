@@ -21,7 +21,7 @@
     const PAYMENT_TYPE = /*[[${paymentType}]]*/ 'verify';
     const AMOUNT       = /*[[${amount}]]*/ '10.00';
     const TARGET_ID    = /*[[${targetId}]]*/ null;
-    const JWT_TOKEN    = /*[['${jwtToken}']]*/ '';
+    const JWT_TOKEN    = /*[[${jwtToken}]]*/ '';
     /*]]>*/
   </script>
 
@@ -36,7 +36,7 @@
     };
 
     // 1) fetch the client token
-    fetch(`/payments/client_token?userId=${USER_ID}`, {
+    fetch(`http://localhost:8080/payments/client_token?userId=${USER_ID}`, {
       headers: authHeaders
     })
     .then(r => r.text())
@@ -64,7 +64,7 @@
           };
 
           // 3) POST to /payments/checkout with JWT
-          fetch('/payments/checkout', {
+          fetch('http://localhost:8080/payments/checkout', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
