@@ -88,7 +88,7 @@ public class UserService implements UserDetailsService {
         // + verificationToken;
 
         // if we use localhost then use this
-        String body = "Click the link to verify your email:http://localhost:8080/api/verifyemail?token="
+        String body = "Click the link to verify your email:\nhttps://server.arayees.co/api/verifyemail?token="
                 + verificationToken;
         emailService.sendEmail(savedUser.getEmail(), subject, body);
 
@@ -101,8 +101,15 @@ public class UserService implements UserDetailsService {
         User user = userRepository.findByEmail(userDTO.getEmail());
         if (user != null && bCryptPasswordEncoder.matches(userDTO.getPassword(), user.getPassword())) {
 
-            if (user.isEmailVerified() == false)
-                throw new IllegalArgumentException("Email not verified");
+            if (!user.isEmailVerified()) {
+                // Resend the verification email token
+                try {
+                    resendVerifyEmailToken(user.getEmail());
+                } catch (MessagingException | InterruptedException e) {
+                    throw new RuntimeException("Error sending verification email", e);
+                }
+                throw new IllegalArgumentException("Email not verified. Verification email has been sent.");
+            }
             user.setLastLogin(new Date()); // this will be look like this 2023-07-07T14:14:13.000+00:00
             return new JwtResponse(jwtService.generateToken(user), jwtService.generateRefreshToken(user), user);
         }
@@ -156,7 +163,7 @@ public class UserService implements UserDetailsService {
         userRepository.save(user);
 
         String subject = "Verify Your Email";
-        String body = "Click the link to verify your email:http://localhost:8080/api/verifyemail?token="
+        String body = "Click the link to verify your email:\nhttps://server.arayees.co/api/verifyemail?token="
                 + verificationToken;
         emailService.sendEmail(email, subject, body);
 
