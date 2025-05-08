@@ -36,7 +36,8 @@
     };
 
     // 1) fetch the client token
-    fetch(`http://localhost:8080/payments/client_token?userId=${USER_ID}`, {
+    //fetch(`http://localhost:8080/payments/client_token?userId=${USER_ID}`, {
+    fetch(`https://server.arayees.co/payments/client_token?userId=${USER_ID}`, {
       headers: authHeaders
     })
     .then(r => r.text())
@@ -64,7 +65,8 @@
           };
 
           // 3) POST to /payments/checkout with JWT
-          fetch('http://localhost:8080/payments/checkout', {
+          //fetch('http://localhost:8080/payments/checkout', {
+          fetch('https://server.arayees.co/payments/checkout', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
