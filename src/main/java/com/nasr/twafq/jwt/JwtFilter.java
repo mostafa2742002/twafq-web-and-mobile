@@ -44,7 +44,7 @@ public class JwtFilter extends OncePerRequestFilter {
                 || path.startsWith("/api/profile") || path.startsWith("/api/profile/") || path.startsWith("/api/profile/**") ||
                 path.startsWith("/api/user/stories") || path.startsWith("/create-verify-intent") || path.startsWith("/create-add-user-intent")
                 || path.startsWith("/callback/verify") || path.startsWith("/callback/add-user");
-                // || path.startsWith("/payments/client_token")
+                // || path.startsWith("/checkoutPage")|| path.startsWith("/api/paypal/client-id")|| path.startsWith("/api/paypal/orders")|| path.startsWith("/api/paypal/orders/{orderID}/capture");
                 // || path.startsWith("/payments/checkout");
     }
 

@@ -80,13 +80,6 @@ public class PaymentBraintreeController {
         if (user.getUsersContactWith().contains(dto.getTargetId()))
             return "User Already Added";
 
-        System.out.println(dto.getAmount());
-        System.out.println(dto.getNonce());
-        System.out.println(dto.getPaymentType());
-        System.out.println(dto.getTargetId());  
-        System.out.println(dto.getUserId());
-
-
             String rawAmt = dto.getAmount();
         // remove anything that is not a digit or dot
         String cleaned = rawAmt.replaceAll("[^\\d.]", "");

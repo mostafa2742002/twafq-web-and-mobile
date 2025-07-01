@@ -85,10 +85,16 @@ public class SecurityConfig {
                                 "/create-verify-intent",
                                 "/create-add-user-intent",
                                 "/callback/verify",
-                                "/callback/add-user")
+                                "/callback/add-user"
+                                // "/checkoutPage",
+                                // "/api/paypal/client-id",
+                                // "/api/paypal/orders",
+                                // "/api/paypal/orders/{orderID}/capture"
+                                )
                                 // "/payments/checkoutPage",
                                 // "/payments/client_token",
                                 // "/payments/checkout")
+
                         .permitAll()
                         .anyRequest().authenticated())
                 .csrf(AbstractHttpConfigurer::disable)
